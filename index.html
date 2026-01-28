@@ -4,21 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tic Tac Blue</title>
+    <!-- Masukkan Meta Tag Base kamu di bawah ini -->
     <meta name="base:app_id" content="696d09c0c0ab25addaaaf455">
     
     <style>
         :root {
+            /* Halaman: Hitam Pekat */
             --bg-page: #000000;
+            
+            /* Bingkai Game: Putih Terang */
             --card-bg: #ffffff;
             --card-border: #e1e4e8;
             --card-shadow: 0 10px 50px rgba(255, 255, 255, 0.15);
+            
+            /* Teks di dalam kartu: Hitam */
             --text-card: #0d1117;
             --text-black: #000000;
+
+            /* Papan (Cells): Warna Gelap */
             --cell-bg: #161b22;
             --cell-border: #30363d;
             --cell-text: #c9d1d9;
-            --accent-x: #ff4757;
-            --accent-o: #0052FF;
+            
+            /* Player & AI Colors */
+            --accent-x: #ff4757; /* Merah untuk Komputer (X) */
+            --accent-o: #0052FF; /* Base Blue untuk Kamu (O) */
+            
+            /* Highlight Effect */
+            --highlight-removal: rgba(255, 71, 87, 0.3);
+            
+            /* Base Logo */
             --base-blue: #0052FF;
         }
 
@@ -39,11 +54,9 @@
             min-height: 100vh;
             padding: 20px;
             position: relative;
-            /* Mencegah scroll saat tap di mobile */
-            overscroll-behavior: none;
-            touch-action: manipulation;
         }
 
+        /* BASE LOGO - TEKS PUTIH (Karena BG Hitam) */
         .base-logo-container {
             position: absolute;
             top: 20px;
@@ -53,8 +66,12 @@
             gap: 8px;
             text-decoration: none;
             opacity: 0.9;
+            transition: opacity 0.2s;
             z-index: 50;
-            pointer-events: none; /* Biar gak ganggu tap */
+        }
+        
+        .base-logo-container:hover {
+            opacity: 1;
         }
 
         .base-logo-box {
@@ -66,12 +83,13 @@
         }
 
         .base-logo-text {
-            color: #ffffff;
+            color: #ffffff; /* Putih */
             font-weight: 700;
             font-size: 14px;
             letter-spacing: 0.5px;
         }
 
+        /* GAME CONTAINER (BINGKAI PUTIH) */
         .game-container {
             background-color: var(--card-bg);
             padding: 2rem;
@@ -84,6 +102,7 @@
             margin-top: 20px;
         }
 
+        /* HEADER */
         header h1 {
             font-size: 2rem;
             margin-bottom: 0.5rem;
@@ -98,6 +117,7 @@
             color: var(--text-black);
         }
 
+        /* Link Logo Blue */
         .blue-link {
             text-decoration: none;
             background-color: var(--accent-o);
@@ -112,6 +132,11 @@
             font-size: 1.8rem;
         }
 
+        .blue-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.4);
+        }
+
         .subtitle {
             font-size: 0.9rem;
             color: #666;
@@ -119,6 +144,7 @@
             font-weight: 500;
         }
 
+        /* STATUS BAR */
         .status-bar {
             display: flex;
             justify-content: center;
@@ -136,6 +162,7 @@
             color: var(--text-black);
         }
 
+        /* BOARD */
         .board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -145,6 +172,7 @@
             background-color: transparent;
         }
 
+        /* Papan Warna Gelap */
         .cell {
             background-color: var(--cell-bg);
             aspect-ratio: 1;
@@ -157,7 +185,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
-            -webkit-tap-highlight-color: transparent; /* Hilangkan highlight biru saat tap iOS */
             color: var(--cell-text);
             border: 1px solid var(--cell-border);
         }
@@ -166,16 +193,15 @@
             transform: scale(0.95);
         }
 
-        .cell.o { color: var(--accent-o); }
-        .cell.x { color: var(--accent-x); }
+        /* Warna Simbol */
+        .cell.o { color: var(--accent-o); } /* Kamu Biru */
+        .cell.x { color: var(--accent-x); } /* Komputer Merah */
 
-        /* ANIMATION FIX: Pastikan blink berjalan mulus di mobile */
+        /* Efek Blink - SEKARANG SELALU HIDUP JIKA SUDAH PUNYA 3 */
         .cell.will-disappear {
             animation: blink-red 1s infinite;
             border: 2px solid var(--accent-x);
             background-color: #2d1518;
-            /* Pastikan animasi terus jalan walau user interact */
-            will-change: opacity, background-color; 
         }
 
         @keyframes blink-red {
@@ -184,6 +210,7 @@
             100% { opacity: 1; }
         }
 
+        /* CONTROLS */
         .controls {
             display: flex;
             justify-content: center;
@@ -208,6 +235,7 @@
             transform: translateY(-1px);
         }
 
+        /* MODAL */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -258,17 +286,20 @@
 </head>
 <body>
 
+    <!-- Logo Base (Teks Putih karena BG Hitam) -->
     <a href="https://www.base.org" target="_blank" class="base-logo-container">
         <div class="base-logo-box"></div>
         <span class="base-logo-text">BASE</span>
     </a>
 
+    <!-- Bingkai Game (Putih) -->
     <main class="game-container">
         <header>
             <h1>
                 <span class="tic-tac-text">Tic Tac</span>
                 <a href="https://base.app/profile/sinkkkk" target="_blank" class="blue-link">Blue</a>
             </h1>
+            
             <p class="subtitle">You (O) vs Computer (X)</p>
         </header>
 
@@ -285,6 +316,7 @@
         </section>
     </main>
 
+    <!-- Modal Result -->
     <div class="modal-overlay" id="result-modal">
         <div class="modal-content">
             <h2 class="result-title" id="modal-title">You Win!</h2>
@@ -295,9 +327,12 @@
 
     <script>
         /* 
-         * LOGIKA GAME (VERSI FIX TIMING)
-         * Blink state diupdate SECEPAT MUNGKIN setelah perubahan papan
+         * LOGIKA GAME
+         * Human (You) = O (Biru Base)
+         * AI (Computer) = X (Merah)
+         * UPDATE: Blink effect sekarang aktif terus (Always On) jika piece count == 3
          */
+
         const boardElement = document.getElementById('board');
         const statusText = document.getElementById('status-text');
         const resetBtn = document.getElementById('reset-btn');
@@ -311,6 +346,7 @@
         let aiMoveHistory = [];
         
         let gameActive = true;
+        
         const HUMAN_PLAYER = 'o'; 
         const AI_PLAYER = 'x';
         
@@ -333,24 +369,26 @@
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.setAttribute('data-index', i);
+                
+                // HAPUS EVENT LISTENER MOUSEENTER/LEAVE
+                // Kita tidak pakai hover lagi, tapi status permanen.
+                
                 cell.addEventListener('click', () => handleCellClick(i));
+                
                 boardElement.appendChild(cell);
             }
             
+            // Cek status awal (seharusnya gak ada blink di awal)
             updateBlinkState();
         }
 
         function handleCellClick(clickedIndex) {
             if (board[clickedIndex] !== "" || !gameActive) return;
 
-            // 1. Bersihkan blink sementara
+            // Matikan blink saat player mengklik (agar tidak mengganggu animasi)
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
-            // 2. Execute Move
             makeMove(clickedIndex, HUMAN_PLAYER, humanMoveHistory);
-
-            // 3. FIX: Update blink IMMEDIATELY after human move
-            updateBlinkState();
 
             if (checkWin(board, HUMAN_PLAYER)) {
                 endGame(false);
@@ -366,14 +404,14 @@
 
                 makeMove(bestMoveIndex, AI_PLAYER, aiMoveHistory);
 
-                // 4. FIX: Update blink IMMEDIATELY after AI move
-                updateBlinkState();
-
                 if (checkWin(board, AI_PLAYER)) {
                     endGame(false, true);
                 } else {
                     gameActive = true;
                     statusText.innerText = "Your Turn";
+                    
+                    // Aktifkan kembali blink setelah AI selesai
+                    updateBlinkState();
                 }
             }, 600);
         }
@@ -386,6 +424,7 @@
             cell.innerText = player.toUpperCase();
             cell.classList.add('taken', player);
 
+            // Logic Hapus Jika > 3
             if (history.length > 3) {
                 const removeIndex = history.shift();
                 board[removeIndex] = "";
@@ -395,13 +434,16 @@
                 removedCell.classList.remove('taken', 'x', 'o');
             }
             
+            // Bersihkan semua blink dulu sebelum re-evaluasi
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
         }
 
+        // Fungsi Baru: Cek apakah Human harus nge-blink
         function updateBlinkState() {
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
-            // Cek: Apakah Game Aktif DAN Human punya 3 simbol?
+            // Jika game aktif DAN giliran Human ANDA Human sudah punya 3 piece
+            // Maka piece pertama history harus berkedip SELAMANYA
             if (gameActive && humanMoveHistory.length === 3) {
                 const oldestIndex = humanMoveHistory[0];
                 const oldestCell = boardElement.children[oldestIndex];
@@ -421,6 +463,7 @@
 
         function endGame(draw, aiWins = false) {
             gameActive = false;
+            // Matikan blink saat game selesai
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
             if (draw) {
