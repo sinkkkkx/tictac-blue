@@ -6,10 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tic Tac Blue</title>
+    
     <!-- Masukkan Meta Tag Base kamu di bawah ini -->
     <meta name="base:app_id" content="697a1c119266edba958ff4c6">
-    <!-- TAMBAHKAN INI -->
+    
+    <!-- TAMBAHKAN INI: PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0052FF">
     
     <style>
         :root {
@@ -373,23 +376,16 @@
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.setAttribute('data-index', i);
-                
-                // HAPUS EVENT LISTENER MOUSEENTER/LEAVE
-                // Kita tidak pakai hover lagi, tapi status permanen.
-                
                 cell.addEventListener('click', () => handleCellClick(i));
-                
                 boardElement.appendChild(cell);
             }
             
-            // Cek status awal (seharusnya gak ada blink di awal)
             updateBlinkState();
         }
 
         function handleCellClick(clickedIndex) {
             if (board[clickedIndex] !== "" || !gameActive) return;
 
-            // Matikan blink saat player mengklik (agar tidak mengganggu animasi)
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
             makeMove(clickedIndex, HUMAN_PLAYER, humanMoveHistory);
@@ -413,8 +409,6 @@
                 } else {
                     gameActive = true;
                     statusText.innerText = "Your Turn";
-                    
-                    // Aktifkan kembali blink setelah AI selesai
                     updateBlinkState();
                 }
             }, 600);
@@ -428,7 +422,6 @@
             cell.innerText = player.toUpperCase();
             cell.classList.add('taken', player);
 
-            // Logic Hapus Jika > 3
             if (history.length > 3) {
                 const removeIndex = history.shift();
                 board[removeIndex] = "";
@@ -438,16 +431,12 @@
                 removedCell.classList.remove('taken', 'x', 'o');
             }
             
-            // Bersihkan semua blink dulu sebelum re-evaluasi
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
         }
 
-        // Fungsi Baru: Cek apakah Human harus nge-blink
         function updateBlinkState() {
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
-            // Jika game aktif DAN giliran Human ANDA Human sudah punya 3 piece
-            // Maka piece pertama history harus berkedip SELAMANYA
             if (gameActive && humanMoveHistory.length === 3) {
                 const oldestIndex = humanMoveHistory[0];
                 const oldestCell = boardElement.children[oldestIndex];
@@ -467,7 +456,6 @@
 
         function endGame(draw, aiWins = false) {
             gameActive = false;
-            // Matikan blink saat game selesai
             document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
 
             if (draw) {
