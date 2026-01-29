@@ -14,6 +14,19 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0052FF">
     
+    <!-- TAMBAHKAN META TAG INI (Untuk Share Preview) -->
+    <meta name="fc:miniapp" content='{
+      "version":"next",
+      "imageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
+      "button": {
+        "title":"Open App",
+        "action": {
+          "type":"launch_frame",
+          "url":"https://tictac-blue-eight.vercel.app"
+        }
+      }
+    }'/>
+    
     <style>
         :root {
             /* Halaman: Hitam Pekat */
@@ -548,17 +561,12 @@
         rematchBtn.addEventListener('click', initGame);
 
         initGame();
-        <meta name="fc:miniapp" content='{
-  "version":"next",
-  "imageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
-  "button": {
-    "title":"Open App",
-    "action": {
-      "type":"launch_frame",
-      "url":"https://tictac-blue-eight.vercel.app"
-    }
-  }
-}'/>
     </script>
+
+    <!-- TAMBAHKAN SCRIPT READY INI -->
+    <script>
+        window.parent.postMessage({ type: 'miniapp:ready' }, '*');
+    </script>
+
 </body>
 </html>
