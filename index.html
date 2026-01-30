@@ -345,7 +345,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT GAME -->
     <script>
         /* 
          * LOGIKA GAME
@@ -362,7 +361,7 @@
         const modalMsg = document.getElementById('modal-msg');
         const rematchBtn = document.getElementById('rematch-btn');
 
-        let board = ["", "", "", "", "", "", "", "", ""];
+        let board = ["", "", "", "", "", "", "", ""];
         let humanMoveHistory = []; 
         let aiMoveHistory = [];
         
@@ -379,7 +378,7 @@
 
         function initGame() {
             boardElement.innerHTML = "";
-            board = ["", "", "", "", "", "", "", "", ""];
+            board = ["", "", "", "", "", "", "", ""];
             humanMoveHistory = [];
             aiMoveHistory = [];
             gameActive = true;
@@ -564,105 +563,63 @@
         initGame();
     </script>
 
-    <!-- TAMBAHKAN SCRIPT HANDSHAKE INI -->
+    <!-- TAMBAHKAN SCRIPT FINAL (Clean + Manifest Payload) -->
     <script>
-    (function setupMiniappHandshake(){
-      const PARENT_ORIGINS = [
-        'https://www.base.dev',    // primary
-        'https://preview.base.org' // fallback if any (optional)
-      ];
+    (function sendMiniappReady(){
+      // 1. Definisikan Metadata (Sama dengan farcaster.json)
+      const APP_META = {
+        name: "Tic Tac Blue",
+        homeUrl: window.location.origin + '/',
+        iconUrl: window.location.origin + "/icon.png",
+        imageUrl: window.location.origin + "/icon.png",
+        heroImageUrl: window.location.origin + "/icon.png",
+        splashImageUrl: window.location.origin + "/icon.png",
+        splashBackgroundColor: "#000000",
+        subtitle: "You (O) vs Computer (X)",
+        description: "Tic Tac Toe vs AI",
+        tagline: "Play instantly",
+        primaryCategory: "games"
+      };
 
-      function log(...args){ try{ console.log('[miniapp-handshake]', ...args); }catch(e){} }
-
+      // 2. Bangun Payload dengan Manifest
       function buildPayload(){
         return {
           type: 'miniapp:ready',
           version: '1',
           href: window.location.href,
           timestamp: Date.now(),
-          ready: true
-      };
-    }
+          ready: true,
+          manifest: APP_META // Ini kuncinya menurut AI sebelah
+        };
+      }
 
-      // kirim payload ke parent (object + string) ke semua origin kandidat
-      function sendReadyToAll(){
+      // 3. Fungsi Kirim (Bersih, tidak spam)
+      function sendToBase(){
         const payload = buildPayload();
-        PARENT_ORIGINS.forEach(origin=>{
-          try{ window.parent.postMessage(payload, origin); }catch(e){}
-          try{ window.parent.postMessage(JSON.stringify(payload), origin); }catch(e){}
-        });
-        // fallback wildcard (debug only)
-        try{ window.parent.postMessage(payload, '*'); }catch(e){}
-        try{ window.parent.postMessage(JSON.stringify(payload), '*'); }catch(e){}
-        log('sent ready', payload);
-      }
-
-      // respons apabila parent nge-ping / connect
-      window.addEventListener('message', (ev) => {
-        let data = ev.data;
-        try { if (typeof data === 'string') data = JSON.parse(data); } catch (e){ /* ignore */ }
-
-        log('recv from parent', ev.origin, data);
-
-        // kalau parent minta handshake, balas
-        if (!data) return;
-        if (data.type === 'miniapp:connect' || data.type === 'miniapp:ping' || data.type === 'miniapp:ready-check') {
-          sendReadyToAll();
-        }
-
-        // juga tangani kasus parent mem-forward "miniapp:ready" (untuk debugging)
-        if (data.type === 'miniapp:ready' && data.ready === true) {
-          log('parent already marked ready');
-        }
-      }, false);
-
-      // coba SDK resmi kalau tersedia (recommended)
-      function trySdkReady(){
+        const targetOrigin = 'https://www.base.dev';
+        
         try {
-          if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-            farcaster.actions.ready().then(()=> log('sdk.farcaster ready() ok')).catch(()=>{});
-          }
-          if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-            sdk.actions.ready().then(()=> log('sdk.actions ready() ok')).catch(()=>{});
-          }
+            window.parent.postMessage(payload, targetOrigin);
         } catch(e){}
+        // Fallback Wildcard
+        try {
+            window.parent.postMessage(payload, '*');
+        } catch(e){}
+        
+        console.log('[Miniapp] Sent Ready with Manifest:', payload);
       }
 
-      // proactive: kirim beberapa kali untuk menutup race condition
-      function proactiveSequence(){
-        trySdkReady();
-        sendReadyToAll();
-        // kirim berkali-kali
-        [250,600,1200,2000].forEach((t)=> setTimeout(()=>{ trySdkReady(); sendReadyToAll(); }, t));
-        // final attempt
-        setTimeout(()=>{ trySdkReady(); sendReadyToAll(); }, 3500);
+      // 4. Eksekusi Sekali pada Load + Sekali pada Timeout (1000ms)
+      // Tidak pakai loop visibility change untuk menghindari spam
+      if (document.readyState === 'complete') {
+        sendToBase();
+      } else {
+        window.addEventListener('load', sendToBase, { once: true });
       }
 
-      // jalankan ketika halaman fully loaded
-      if (document.readyState === 'complete') proactiveSequence();
-      else window.addEventListener('load', proactiveSequence, { once: true });
+      // Fallback Timeout jika browser load terlalu cepat / lambat
+      setTimeout(sendToBase, 1000);
 
-      // resend ketika tab visible (user switched)
-      window.addEventListener('visibilitychange', ()=> { if (document.visibilityState==='visible') proactiveSequence(); });
-
-      // tambahan: tampilkan badge kecil agar lo tahu script dieksekusi (debug visual)
-      try{
-        const el = document.createElement('div');
-        el.id='miniapp-ready-badge';
-        el.style.position='fixed';
-        el.style.right='8px';
-        el.style.bottom='8px';
-        el.style.padding='6px 8px';
-        el.style.background='#0b74ff';
-        el.style.color='#fff';
-        el.style.fontSize='12px';
-        el.style.borderRadius='8px';
-        el.style.zIndex='99999';
-        el.style.opacity='0.9';
-        el.textContent='handshake running';
-        document.body.appendChild(el);
-        setTimeout(()=>{ el.textContent='handshake sent'; }, 2000);
-      }catch(e){}
     })();
     </script>
 
