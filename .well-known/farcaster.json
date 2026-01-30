@@ -2,7 +2,8 @@
   "accountAssociation": {
     "header": "eyJmaWQiOjIzNTM0NTYsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhlYjdCZEI4YzhGZTA5NjlEMDA3ZkRlRTNlQWJmOEFBRjZBREIwODdlIn0",
     "payload": "eyJkb21haW4iOiJ0aWN0YWMtYmx1ZS1laWdodC52ZXJjZWwuYXBwIn0",
-    "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEHu-LqvjNwFcjw-x9jMMshWJMh_O8auSbDM2c98s-C4mWvKvL-DGV_CEsKMzDXRRXxDTB9fWaUaXPcpygFoTZ5EGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEHu-LqvjNwFcjw-x9jMMshWJMh_O8auSbDM2c98s-C4mWvKvL-DGV_CEsKMzDXRRXxDTB9fWaUaXPcpygFoTZ5EGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+"
   },
   "miniapp": {
     "version": "1",
@@ -10,15 +11,20 @@
     "homeUrl": "https://tictac-blue-eight.vercel.app",
     "iconUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "imageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
+    "heroImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "You (O) vs Computer (X)",
-    "description": "Play Tic Tac Toe vs AI",
+    "description": "Tic Tac Toe vs AI",
+    "tagline": "Play instantly",
+    "primaryCategory": "games",
+    "tags": ["games","tic-tac-toe"],
+    "ogTitle": "Tic Tac Blue",
+    "ogDescription": "Play Tic Tac Toe vs AI",
+    "ogImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "screenshotUrls": [
       "https://tictac-blue-eight.vercel.app/icon.png"
     ],
-    "primaryCategory": "games",
-    "tags": ["games","tic-tac-toe"],
     "noindex": false
   }
 }
