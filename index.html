@@ -26,8 +26,8 @@
         }
       }
     }'/>
-    
-    <!-- SDK FARCASTER RESMI (Ditambahkan) -->
+
+    <!-- Script Loader untuk Farcaster SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
     
     <style>
@@ -348,6 +348,7 @@
         </div>
     </div>
 
+    <!-- SCRIPT GAME UTAMA -->
     <script>
         /* 
          * LOGIKA GAME
@@ -397,6 +398,9 @@
             }
             
             updateBlinkState();
+            
+            // PANGGIL NOTIFY READY SETELAH UPDATEBLINKSTATE (Sesuai instruksi AI)
+            try { if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
         }
 
         function handleCellClick(clickedIndex) {
@@ -563,62 +567,106 @@
         resetBtn.addEventListener('click', initGame);
         rematchBtn.addEventListener('click', initGame);
 
-        // Jalankan Game
         initGame();
     </script>
 
-    <!-- SCRIPT READY + SDK CALL -->
+    <!-- TAMBAHKAN SCRIPT ROBUST LOADER (Sesuai instruksi AI sebelah) -->
     <script>
-      // Pastikan game sudah inisialisasi (initGame) sebelum notify ready
-      function notifyBaseReady() {
-        try {
-          // 1. Coba Panggil SDK Resmi Farcaster (Rekomendasi AI)
-          if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-            sdk.actions.ready().then(() => {
-              console.log('[MiniApp] sdk.actions.ready() SUCCESS');
-            }).catch(err => {
-              console.warn('[MiniApp] sdk.actions.ready() FAILED', err);
-            });
-            return; // Sukses pakai SDK, skip fallback
-          }
+    /* Robust loader + poller untuk Farcaster SDK, lalu panggil sdk.actions.ready().
+       Jika gagal, fallback ke postMessage. Juga panggil notify setelah initGame selesai.
+    */
 
-          // 2. Coba Pakai SDK Global (Farcaster) kalau ada
-          if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-            farcaster.actions.ready().then(() => {
-              console.log('[MiniApp] farcaster.actions.ready() SUCCESS');
-            }).catch(err => {
-              console.warn('[MiniApp] farcaster.actions.ready() FAILED', err);
-            });
-            return;
-          }
-        } catch (e) {
-          console.warn('[MiniApp] Error saat memanggil SDK:', e);
-        }
+    function loadScriptOnce(url) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector('script[data-src="'+url+'"]')) return resolve();
+        const s = document.createElement('script');
+        s.src = url;
+        s.async = true;
+        s.setAttribute('data-src', url);
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('failed load '+url));
+        document.head.appendChild(s);
+      });
+    }
 
-        // 3. Fallback postMessage (Jika SDK tidak ada / gagal)
+    async function ensureSdkLoaded() {
+      const cdns = [
+        'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js',
+        'https://unpkg.com/@farcaster/miniapp-sdk/dist/index.min.js'
+      ];
+      for (const url of cdns) {
         try {
-          const payload = {
-            type: 'miniapp:ready',
-            version: '1',
-            href: window.location.href,
-            timestamp: Date.now(),
-            ready: true
-          };
-          window.parent.postMessage(payload, 'https://www.base.dev');
-          window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev');
-          console.log('[MiniApp] Sent Fallback Ready');
-        } catch (e) {
-          console.warn('[MiniApp] Fallback PostMessage Failed:', e);
-        }
+          await loadScriptOnce(url);
+          // small delay to allow global to appear
+          await new Promise(r => setTimeout(r, 200));
+          if (window.sdk || window.farcaster) return true;
+        } catch(e){}
       }
+      return !!(window.sdk || window.farcaster);
+    }
 
-      // Jalankan saat window load complete
-      if (document.readyState === 'complete') {
-        notifyBaseReady();
+    function tryCallSdkReady() {
+      try {
+        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+          return sdk.actions.ready().then(()=>({ok:true, which:'sdk'})).catch(err=>({ok:false, err, which:'sdk'}));
+        }
+        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
+          return farcaster.actions.ready().then(()=>{ok:true, which:'farcaster'}).catch(err=>({ok:false, err, which:'farcaster'}));
+        }
+      } catch(e){ return Promise.resolve({ok:false, err:e, which:'throw'}); }
+      return Promise.resolve({ok:false, err:new Error('no-sdk'), which:'none'});
+    }
+
+    function sendFallbackReady() {
+      try {
+        const payload = { type:'miniapp:ready', version:'1', href: window.location.href, timestamp: Date.now(), ready: true };
+        // try exact origin then wildcard
+        try {
+            window.parent.postMessage(payload, 'https://www.base.dev');
+        } catch(e){}
+        // fallback wildcard
+        try {
+            window.parent.postMessage(payload, '*');
+        } catch(e){}
+        
+        console.log('[Miniapp] fallback ready posted');
+      } catch(e) {
+        console.warn('[Miniapp] fallback postMessage failed', e);
+      }
+    }
+
+    // main notify function
+    async function notifyBaseReady() {
+      console.log('[Miniapp] notifyBaseReady start');
+      // 1) try ensure sdk is loaded (attempt multiple cdn urls)
+      const sdkLoaded = await ensureSdkLoaded();
+      console.log('[Miniapp] sdkLoaded?', sdkLoaded, 'window.sdk?', !!window.sdk, 'window.farcaster?', !!window.farcaster);
+
+      // 2) try to call sdk.ready
+      const res = await tryCallSdkReady();
+      if (res.ok) {
+        console.log('[Miniapp] sdk.actions.ready() OK via', res.which);
+        return;
       } else {
-        window.addEventListener('load', notifyBaseReady, { once: true });
+        console.warn('[Miniapp] sdk.actions.ready() not OK:', res.which, res.err);
       }
-    </script>
 
+      // 3) fallback: send postMessage (still useful)
+      sendFallbackReady();
+    }
+
+    // ensure notifyBaseReady runs after initGame UI ready
+    // call it after load and also call it at end of initGame (redundant safe)
+
+    // call on load
+    if (document.readyState === 'complete') {
+      notifyBaseReady();
+    } else {
+      window.addEventListener('load', notifyBaseReady, { once: true });
+    }
+    
+    // also expose so you can call after UI init
+    window.notifyBaseReady = notifyBaseReady;
+    </script>
 </body>
 </html>
