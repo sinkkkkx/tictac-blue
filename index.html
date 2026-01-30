@@ -129,7 +129,7 @@
             font-weight: 800;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap:5px;
             cursor: default;
         }
 
@@ -563,10 +563,34 @@
         initGame();
     </script>
 
-    <!-- TAMBAHKAN SCRIPT READY INI -->
+    <!-- TAMBAHKAN SCRIPT READY ROBUST INI -->
     <script>
-        window.parent.postMessage({ type: 'miniapp:ready' }, '*');
-    </script>
+    (function sendMiniappReady(){
+      function doReady(){
+        try{
+          // Jika SDK tersedia - gunakan ready() resmi
+          if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
+            farcaster.actions.ready().catch(()=>{});
+          }
+          if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+            sdk.actions.ready().catch(()=>{});
+          }
+        } catch(e){ /* ignore */ }
 
+        // Fallback: postMessage ke parent (iframe). Kirim object dan string variant.
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'miniapp:ready' }, '*');
+            window.parent.postMessage(JSON.stringify({ type: 'miniapp:ready' }), '*');
+          }
+        } catch(e){}
+      }
+
+      // Jalankan setelah load + juga delayed attempt
+      if (document.readyState === 'complete') doReady();
+      else window.addEventListener('load', doReady, { once: true });
+      setTimeout(doReady, 800); // ekstra redundansi
+    })();
+    </script>
 </body>
 </html>
