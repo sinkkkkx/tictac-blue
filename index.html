@@ -1,44 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Tic Tac Blue</title>
 
-  <!-- Base app id -->
   <meta name="base:app_id" content="697a1c119266edba958ff4c6">
-
-  <!-- PWA manifest -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0052FF">
-
-  <!-- Embed metadata: preferred fc:frame + fallback fc:miniapp -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png"}'/>
-  <meta name="fc:miniapp" content="true"/>
-
-  <link rel="icon" type="image/png" href="/icon.png">
+  <meta name="fc:miniapp" content="true" />
+  <link rel="icon" href="/icon.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon.png">
 
   <style>
-    /* --- styles (sama seperti sebelumnya, ringkas) --- */
-    :root{--bg:#000;--card:#fff;--card-border:#e1e4e8;--accent-o:#0052FF;--accent-x:#ff4757}
+    :root{
+      --bg-page:#000000; --card-bg:#ffffff; --card-border:#e1e4e8;
+      --accent-o:#0052FF; --accent-x:#ff4757;
+      --cell-bg:#161b22; --cell-border:#30363d; --cell-text:#c9d1d9;
+    }
     *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-    body{background:var(--bg);color:#0d1117;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-    .game-container{background:var(--card);padding:2rem;border-radius:16px;box-shadow:0 10px 50px rgba(0,0,0,.25);width:100%;max-width:420px;border:1px solid var(--card-border);text-align:center}
+    body{background:var(--bg-page);color:#0d1117;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .game-container{background:var(--card-bg);padding:2rem;border-radius:16px;width:100%;max-width:420px;text-align:center;border:1px solid var(--card-border);box-shadow:0 10px 40px rgba(0,0,0,.25)}
     header h1{font-size:2rem;font-weight:800;display:inline-flex;align-items:center;gap:8px}
-    .blue-link{background:var(--accent-o);color:#fff;padding:4px 12px;border-radius:8px;font-weight:800;text-decoration:none;font-size:1.6rem}
+    .blue-link{background:var(--accent-o);color:#fff;padding:4px 12px;border-radius:8px;font-weight:800;text-decoration:none}
     .subtitle{color:#666;margin-bottom:1rem}
     .status-bar{margin-bottom:1rem;padding:8px 20px;border-radius:50px;border:1px solid #e1e4e8;background:rgba(0,0,0,.03)}
     .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px;margin-bottom:1rem}
-    .cell{background:#161b22;color:#c9d1d9;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;border:1px solid #30363d;cursor:pointer}
-    .cell.o{color:var(--accent-o)}.cell.x{color:var(--accent-x)}
-    button{padding:10px 24px;border-radius:999px;border:1px solid #d0d7de;background:#f6f8fa;font-weight:700;cursor:pointer}
-    .modal-overlay{display:none}
+    .cell{background:var(--cell-bg);color:var(--cell-text);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;border:1px solid var(--cell-border);cursor:pointer;user-select:none}
+    .cell.o{color:var(--accent-o)} .cell.x{color:var(--accent-x)}
+    .cell.will-disappear{animation:blink-red 1s infinite;border:2px solid var(--accent-x);background:#2d1518}
+    @keyframes blink-red{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+    button{padding:10px 20px;border-radius:999px;border:1px solid #d0d7de;background:#f6f8fa;font-weight:700;cursor:pointer}
+    .modal-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4);z-index:60}
     .modal-overlay.active{display:flex}
+    .modal-content{background:#fff;padding:2rem;border-radius:16px;min-width:260px;text-align:center}
   </style>
 </head>
 <body>
-
   <main class="game-container" role="main">
     <header>
       <h1><span>Tic Tac</span> <a class="blue-link" href="https://base.app/profile/sinkkkk" target="_blank" rel="noreferrer">Blue</a></h1>
@@ -49,172 +47,183 @@
 
     <section id="board" class="board" aria-label="game board"></section>
 
-    <div style="display:flex;justify-content:center;"><button id="reset-btn">Reset Board</button></div>
+    <div style="display:flex;justify-content:center"><button id="reset-btn">Reset Board</button></div>
   </main>
 
   <div id="result-modal" class="modal-overlay" aria-hidden="true">
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true">
       <h2 id="modal-title">You Win!</h2>
       <p id="modal-msg">Great moves!</p>
-      <button id="rematch-btn">Rematch</button>
+      <div style="margin-top:12px"><button id="rematch-btn">Rematch</button></div>
     </div>
   </div>
 
-  <!-- GAME LOGIC -->
   <script>
+    // konsisten nama variabel
     const boardEl = document.getElementById('board');
     const statusText = document.getElementById('status-text');
     const resetBtn = document.getElementById('reset-btn');
+    const rematchBtn = document.getElementById('rematch-btn');
     const modal = document.getElementById('result-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalMsg = document.getElementById('modal-msg');
-    const rematchBtn = document.getElementById('rematch-btn');
 
     let board = Array(9).fill('');
-    let humanHistory = [], aiHistory = [];
+    let humanMoveHistory = [];
+    let aiMoveHistory = [];
     let gameActive = true;
-    const HUMAN='o', AI='x';
-    const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    const HUMAN = 'o', AI = 'x';
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
     function initGame(){
       board = Array(9).fill('');
-      humanHistory = []; aiHistory = []; gameActive=true;
-      statusText.innerText='Your Turn';
+      humanMoveHistory = []; aiMoveHistory = []; gameActive = true;
+      statusText.innerText = 'Your Turn';
       modal.classList.remove('active'); modal.setAttribute('aria-hidden','true');
-      boardEl.innerHTML='';
+      boardEl.innerHTML = '';
       for(let i=0;i<9;i++){
-        const c=document.createElement('div');
-        c.className='cell'; c.dataset.index=i;
-        c.addEventListener('click', ()=> handleClick(i));
-        boardEl.appendChild(c);
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        cell.addEventListener('click', ()=> handleCellClick(i));
+        boardEl.appendChild(cell);
       }
-      updateBlink();
-      // notify ready after UI render
-      try { if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
+      updateBlinkState();
+      // panggil ready notify setelah UI siap
+      try{ if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
     }
 
-    function handleClick(i){
-      if(board[i]!=='' || !gameActive) return;
-      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
-      move(i,HUMAN, humanHistory);
-      if(checkWin(board,HUMAN)){ finish(false); return; }
-      statusText.innerText='Computer Thinking...'; gameActive=false;
+    function handleCellClick(idx){
+      if (!gameActive || board[idx] !== '') return;
+      // clear blinking classes to recalc
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      makeMove(idx, HUMAN, humanMoveHistory);
+      if (checkWin(board, HUMAN)){ endGame(false); return; }
+      statusText.innerText = 'Computer Thinking...';
+      gameActive = false;
       setTimeout(()=>{
-        const mv = minimax(board, humanHistory, aiHistory,0,false).index;
-        move(mv,AI, aiHistory);
-        if(checkWin(board,AI)){ finish(false,true); } else { gameActive=true; statusText.innerText='Your Turn'; updateBlink(); }
-      },600);
+        const aiMoveObj = minimax(board, humanMoveHistory, aiMoveHistory, 0, false);
+        const aiIdx = aiMoveObj.index;
+        makeMove(aiIdx, AI, aiMoveHistory);
+        if (checkWin(board, AI)){ endGame(false, true); }
+        else { gameActive = true; statusText.innerText = 'Your Turn'; updateBlinkState(); }
+      }, 500);
     }
 
-    function move(idx,player,history){
-      history.push(idx); board[idx]=player;
-      const cell = boardEl.children[idx];
-      cell.innerText = player.toUpperCase();
-      cell.classList.add('taken', player);
-      if(history.length>3){
-        const r = history.shift();
-        board[r] = '';
-        const rc = boardEl.children[r];
-        if(rc){ rc.innerText=''; rc.classList.remove('taken','x','o'); }
+    function makeMove(index, player, history){
+      history.push(index);
+      board[index] = player;
+      const cell = boardEl.children[index];
+      if (cell){
+        cell.innerText = player.toUpperCase();
+        cell.classList.add('taken', player);
       }
-      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
+      // remove oldest if over limit
+      if (history.length > 3){
+        const removed = history.shift();
+        board[removed] = '';
+        const removedCell = boardEl.children[removed];
+        if (removedCell){ removedCell.innerText = ''; removedCell.classList.remove('taken','x','o'); }
+      }
+      // update blink after state change
+      updateBlinkState();
     }
 
-    function updateBlink(){
-      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
-      if(gameActive && humanHistory.length===3){
-        const oldest = humanHistory[0]; const el = boardEl.children[oldest];
-        if(el) el.classList.add('will-disappear');
+    function updateBlinkState(){
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      if (gameActive && humanMoveHistory.length === 3){
+        const oldest = humanMoveHistory[0];
+        const el = boardEl.children[oldest];
+        if (el) el.classList.add('will-disappear');
       }
     }
 
-    function checkWin(b, p){ return wins.some(w=> w.every(i=> b[i]===p)); }
+    function checkWin(b, player){
+      return wins.some(w => w.every(i => b[i] === player));
+    }
 
-    function finish(draw, aiWins=false){
-      gameActive=false; document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
-      if(draw){ modalTitle.innerText='Draw!'; modalMsg.innerText='Unbelievable.'; }
-      else { if(aiWins){ modalTitle.innerText='You Lose!'; modalMsg.innerText='The AI outsmarted you.'; } else { modalTitle.innerText='You Win!'; modalMsg.innerText='Great moves!'; } }
+    function endGame(draw, aiWins = false){
+      gameActive = false;
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      if (draw){ modalTitle.innerText = 'Draw!'; modalMsg.innerText = 'Unbelievable.'; }
+      else {
+        if (aiWins){ modalTitle.innerText = 'You Lose!'; modalMsg.innerText = 'The AI outsmarted you.'; }
+        else { modalTitle.innerText = 'You Win!'; modalMsg.innerText = 'Great moves!'; }
+      }
       modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
     }
 
-    function minimax(b,h,a,depth,isMax){
-      if(checkWin(b,AI)) return {score:10-depth};
-      if(checkWin(b,HUMAN)) return {score:depth-10};
-      if(depth>=6) return {score:0};
-      const avail = b.map((v,i)=> v===''?i:null).filter(v=>v!==null);
-      if(avail.length===0) return {score:0};
-      const moves=[];
-      for(let i=0;i<avail.length;i++){
-        const mv={index:avail[i]};
-        let nb=[...b], nh=[...h], na=[...a];
-        if(isMax){
+    function minimax(curBoard, hHist, aHist, depth, isMaximizing){
+      if (checkWin(curBoard, AI)) return { score: 10 - depth };
+      if (checkWin(curBoard, HUMAN)) return { score: depth - 10 };
+      if (depth >= 6) return { score: 0 };
+      const avail = curBoard.map((v,i)=> v === '' ? i : null).filter(v => v !== null);
+      if (avail.length === 0) return { score: 0 };
+      const moves = [];
+      for (let i=0;i<avail.length;i++){
+        const move = { index: avail[i] };
+        const nb = [...curBoard]; const nh = [...hHist]; const na = [...aHist];
+        if (isMaximizing){
           nb[avail[i]] = AI; na.push(avail[i]);
-          if(na.length>3){ const r=na.shift(); nb[r]=''; }
-          mv.score = minimax(nb,nh,na,depth+1,false).score;
+          if (na.length > 3){ const r = na.shift(); nb[r] = ''; }
+          move.score = minimax(nb, nh, na, depth+1, false).score;
         } else {
           nb[avail[i]] = HUMAN; nh.push(avail[i]);
-          if(nh.length>3){ const r=nh.shift(); nb[r]=''; }
-          mv.score = minimax(nb,nh,na,depth+1,true).score;
+          if (nh.length > 3){ const r = nh.shift(); nb[r] = ''; }
+          move.score = minimax(nb, nh, na, depth+1, true).score;
         }
-        moves.push(mv);
+        moves.push(move);
       }
-      let bestMove; if(isMax){ let best=-99999; for(let i=0;i<moves.length;i++) if(moves[i].score>best){best=moves[i].score; bestMove=i;} }
-      else { let best=99999; for(let i=0;i<moves.length;i++) if(moves[i].score<best){best=moves[i].score; bestMove=i;} }
-      return moves[bestMove];
+      let bestIndex = 0;
+      if (isMaximizing){
+        let bestScore = -Infinity;
+        for (let i=0;i<moves.length;i++) if (moves[i].score > bestScore){ bestScore = moves[i].score; bestIndex = i; }
+      } else {
+        let bestScore = Infinity;
+        for (let i=0;i<moves.length;i++) if (moves[i].score < bestScore){ bestScore = moves[i].score; bestIndex = i; }
+      }
+      return moves[bestIndex];
     }
 
+    // listeners
     resetBtn.addEventListener('click', initGame);
-    rematchBtn.addEventListener('click', initGame);
+    rematchBtn.addEventListener('click', ()=>{
+      // close modal then re-init
+      modal.classList.remove('active'); modal.setAttribute('aria-hidden','true');
+      initGame();
+    });
 
-    // init UI
+    // init
     initGame();
   </script>
 
-  <!-- notifyBaseReady: try module import sdk -> use global -> fallback postMessage (single, not spam) -->
+  <!-- notifyBaseReady minimal (kept) -->
   <script>
     async function notifyBaseReady(){
       if (window.__miniapp_ready_called) return;
-      // 1) Try module import (preferred)
       try {
-        const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js');
-        const sdk = mod?.sdk || mod?.default || mod;
-        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+        // try module import (preferred)
+        const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js').catch(()=>null);
+        const sdk = mod && (mod.sdk || mod.default || mod);
+        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function'){
           await sdk.actions.ready();
-          console.log('[MiniApp] sdk.actions.ready() OK (module)');
+          console.log('[MiniApp] sdk.actions.ready() OK');
           window.__miniapp_ready_called = true;
           return;
         }
-      } catch(e){
-        console.warn('[MiniApp] module import failed', e);
-      }
-
-      // 2) Try global SDK (UMD) if present
+      } catch(e){ console.warn('module import fail', e); }
+      // fallback single postMessage
       try {
-        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          await sdk.actions.ready(); window.__miniapp_ready_called = true; console.log('[MiniApp] sdk.actions.ready() OK (global sdk)'); return;
-        }
-        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-          await farcaster.actions.ready(); window.__miniapp_ready_called = true; console.log('[MiniApp] farcaster.actions.ready() OK'); return;
-        }
-      } catch(e){ console.warn('[MiniApp] global sdk ready failed', e); }
-
-      // 3) Single fallback postMessage (only once)
-      try {
-        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready:true };
+        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
         window.parent.postMessage(payload, 'https://www.base.dev');
-        window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev');
         console.log('[MiniApp] fallback postMessage sent');
         window.__miniapp_ready_called = true;
-      } catch(e){ console.warn('[MiniApp] fallback postMessage failed', e); }
+      } catch(e){ console.warn('fallback postMessage failed', e); }
     }
-
-    // backup: run after full load as safety
+    // run once after load + exposed for initGame
     if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(), 200);
     else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(), 200), { once:true });
-
-    // expose for initGame call
     window.notifyBaseReady = notifyBaseReady;
   </script>
-
 </body>
 </html>
