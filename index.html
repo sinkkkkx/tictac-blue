@@ -27,6 +27,9 @@
       }
     }'/>
     
+    <!-- SDK FARCASTER RESMI (Ditambahkan) -->
+    <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
+    
     <style>
         :root {
             /* Halaman: Hitam Pekat */
@@ -262,7 +265,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255,255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -560,67 +563,61 @@
         resetBtn.addEventListener('click', initGame);
         rematchBtn.addEventListener('click', initGame);
 
+        // Jalankan Game
         initGame();
     </script>
 
-    <!-- TAMBAHKAN SCRIPT FINAL (Clean + Manifest Payload) -->
+    <!-- SCRIPT READY + SDK CALL -->
     <script>
-    (function sendMiniappReady(){
-      // 1. Definisikan Metadata (Sama dengan farcaster.json)
-      const APP_META = {
-        name: "Tic Tac Blue",
-        homeUrl: window.location.origin + '/',
-        iconUrl: window.location.origin + "/icon.png",
-        imageUrl: window.location.origin + "/icon.png",
-        heroImageUrl: window.location.origin + "/icon.png",
-        splashImageUrl: window.location.origin + "/icon.png",
-        splashBackgroundColor: "#000000",
-        subtitle: "You (O) vs Computer (X)",
-        description: "Tic Tac Toe vs AI",
-        tagline: "Play instantly",
-        primaryCategory: "games"
-      };
+      // Pastikan game sudah inisialisasi (initGame) sebelum notify ready
+      function notifyBaseReady() {
+        try {
+          // 1. Coba Panggil SDK Resmi Farcaster (Rekomendasi AI)
+          if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+            sdk.actions.ready().then(() => {
+              console.log('[MiniApp] sdk.actions.ready() SUCCESS');
+            }).catch(err => {
+              console.warn('[MiniApp] sdk.actions.ready() FAILED', err);
+            });
+            return; // Sukses pakai SDK, skip fallback
+          }
 
-      // 2. Bangun Payload dengan Manifest
-      function buildPayload(){
-        return {
-          type: 'miniapp:ready',
-          version: '1',
-          href: window.location.href,
-          timestamp: Date.now(),
-          ready: true,
-          manifest: APP_META // Ini kuncinya menurut AI sebelah
-        };
+          // 2. Coba Pakai SDK Global (Farcaster) kalau ada
+          if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
+            farcaster.actions.ready().then(() => {
+              console.log('[MiniApp] farcaster.actions.ready() SUCCESS');
+            }).catch(err => {
+              console.warn('[MiniApp] farcaster.actions.ready() FAILED', err);
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn('[MiniApp] Error saat memanggil SDK:', e);
+        }
+
+        // 3. Fallback postMessage (Jika SDK tidak ada / gagal)
+        try {
+          const payload = {
+            type: 'miniapp:ready',
+            version: '1',
+            href: window.location.href,
+            timestamp: Date.now(),
+            ready: true
+          };
+          window.parent.postMessage(payload, 'https://www.base.dev');
+          window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev');
+          console.log('[MiniApp] Sent Fallback Ready');
+        } catch (e) {
+          console.warn('[MiniApp] Fallback PostMessage Failed:', e);
+        }
       }
 
-      // 3. Fungsi Kirim (Bersih, tidak spam)
-      function sendToBase(){
-        const payload = buildPayload();
-        const targetOrigin = 'https://www.base.dev';
-        
-        try {
-            window.parent.postMessage(payload, targetOrigin);
-        } catch(e){}
-        // Fallback Wildcard
-        try {
-            window.parent.postMessage(payload, '*');
-        } catch(e){}
-        
-        console.log('[Miniapp] Sent Ready with Manifest:', payload);
-      }
-
-      // 4. Eksekusi Sekali pada Load + Sekali pada Timeout (1000ms)
-      // Tidak pakai loop visibility change untuk menghindari spam
+      // Jalankan saat window load complete
       if (document.readyState === 'complete') {
-        sendToBase();
+        notifyBaseReady();
       } else {
-        window.addEventListener('load', sendToBase, { once: true });
+        window.addEventListener('load', notifyBaseReady, { once: true });
       }
-
-      // Fallback Timeout jika browser load terlalu cepat / lambat
-      setTimeout(sendToBase, 1000);
-
-    })();
     </script>
 
 </body>
