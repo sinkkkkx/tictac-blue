@@ -6,667 +6,321 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tic Tac Blue</title>
-    
-    <!-- Masukkan Meta Tag Base kamu di bawah ini -->
+
+    <!-- Base app id -->
     <meta name="base:app_id" content="697a1c119266edba958ff4c6">
-    
-    <!-- TAMBAHKAN INI: PWA Manifest -->
+
+    <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0052FF">
-    
-    <!-- TAMBAHKAN META TAG INI (Untuk Share Preview) -->
-    <meta name="fc:miniapp" content='{
+
+    <!-- Embed metadata: primary (fc:frame) + fallback (fc:miniapp=true) -->
+    <meta name="fc:frame" content='{
       "version":"next",
       "imageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
       "button": {
-        "title":"Open App",
+        "title":"Play Tic Tac Blue",
         "action": {
           "type":"launch_frame",
-          "url":"https://tictac-blue-eight.vercel.app"
+          "name":"Tic Tac Blue",
+          "url":"https://tictac-blue-eight.vercel.app",
+          "splashImageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
+          "splashBackgroundColor":"#000000"
         }
       }
     }'/>
+    <meta name="fc:miniapp" content="true" />
 
-    <!-- Script Loader untuk Farcaster SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
-    
     <style>
-        :root {
-            /* Halaman: Hitam Pekat */
-            --bg-page: #000000;
-            
-            /* Bingkai Game: Putih Terang */
-            --card-bg: #ffffff;
-            --card-border: #e1e4e8;
-            --card-shadow: 0 10px 50px rgba(255, 255, 255, 0.15);
-            
-            /* Teks di dalam kartu: Hitam */
-            --text-card: #0d1117;
-            --text-black: #000000;
-
-            /* Papan (Cells): Warna Gelap */
-            --cell-bg: #161b22;
-            --cell-border: #30363d;
-            --cell-text: #c9d1d9;
-            
-            /* Player & AI Colors */
-            --accent-x: #ff4757; /* Merah untuk Komputer (X) */
-            --accent-o: #0052FF; /* Base Blue untuk Kamu (O) */
-            
-            /* Highlight Effect */
-            --highlight-removal: rgba(255, 71, 87, 0.3);
-            
-            /* Base Logo */
-            --base-blue: #0052FF;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-page);
-            color: var(--text-card);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            position: relative;
-        }
-
-        /* BASE LOGO - TEKS PUTIH (Karena BG Hitam) */
-        .base-logo-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            opacity: 0.9;
-            transition: opacity 0.2s;
-            z-index: 50;
-        }
-        
-        .base-logo-container:hover {
-            opacity: 1;
-        }
-
-        .base-logo-box {
-            width: 24px;
-            height: 24px;
-            background-color: var(--base-blue);
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0, 82, 255, 0.5);
-        }
-
-        .base-logo-text {
-            color: #ffffff; /* Putih */
-            font-weight: 700;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-
-        /* GAME CONTAINER (BINGKAI PUTIH) */
-        .game-container {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid var(--card-border);
-            margin-top: 20px;
-        }
-
-        /* HEADER */
-        header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            font-weight: 800;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            cursor: default;
-        }
-
-        .tic-tac-text {
-            color: var(--text-black);
-        }
-
-        /* Link Logo Blue */
-        .blue-link {
-            text-decoration: none;
-            background-color: var(--accent-o);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-weight: 800;
-            display: inline-block;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            top: -2px;
-            font-size: 1.8rem;
-        }
-
-        .blue-link:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 82, 255, 0.4);
-        }
-
-        .subtitle {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
-
-        /* STATUS BAR */
-        .status-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            background: rgba(0, 0, 0, 0.03);
-            padding: 8px 20px;
-            border-radius: 50px;
-            border: 1px solid #e1e4e8;
-        }
-
-        .player-turn {
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--text-black);
-        }
-
-        /* BOARD */
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 1.5rem;
-            padding: 10px;
-            background-color: transparent;
-        }
-
-        /* Papan Warna Gelap */
-        .cell {
-            background-color: var(--cell-bg);
-            aspect-ratio: 1;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            color: var(--cell-text);
-            border: 1px solid var(--cell-border);
-        }
-
-        .cell:active:not(.taken) {
-            transform: scale(0.95);
-        }
-
-        /* Warna Simbol */
-        .cell.o { color: var(--accent-o); } /* Kamu Biru */
-        .cell.x { color: var(--accent-x); } /* Komputer Merah */
-
-        /* Efek Blink - SEKARANG SELALU HIDUP JIKA SUDAH PUNYA 3 */
-        .cell.will-disappear {
-            animation: blink-red 1s infinite;
-            border: 2px solid var(--accent-x);
-            background-color: #2d1518;
-        }
-
-        @keyframes blink-red {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; background-color: #441015; }
-            100% { opacity: 1; }
-        }
-
-        /* CONTROLS */
-        .controls {
-            display: flex;
-            justify-content: center;
-        }
-
-        button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, background 0.2s;
-            font-size: 1rem;
-            background-color: #f6f8fa;
-            color: var(--text-black);
-            font-weight: 700;
-            border: 1px solid #d0d7de;
-        }
-
-        .btn-restart:hover {
-            background-color: #eef2f6;
-            transform: translateY(-1px);
-        }
-
-        /* MODAL */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-
-        .modal-content {
-            background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            transform: scale(0.8);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 90%;
-            width: 320px;
-            border: 1px solid #e1e4e8;
-        }
-
-        .modal-overlay.active .modal-content { transform: scale(1); }
-
-        .result-title { font-size: 2rem; margin-bottom: 1rem; font-weight: 800; color: #000; }
-        .result-message { color: #666; margin-bottom: 1.5rem; }
-        
-        .btn-primary {
-            background-color: var(--accent-o);
-            color: white;
-            width: 100%;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 82, 255, 0.4);
-        }
-        .btn-primary:hover { background-color: #0039b3; transform: translateY(-2px); }
-
+      /* (styles unchanged) */
+      :root{
+        --bg-page:#000;
+        --card-bg:#fff; --card-border:#e1e4e8; --card-shadow:0 10px 50px rgba(255,255,255,0.15);
+        --text-card:#0d1117; --text-black:#000;
+        --cell-bg:#161b22; --cell-border:#30363d; --cell-text:#c9d1d9;
+        --accent-x:#ff4757; --accent-o:#0052FF; --base-blue:#0052FF;
+      }
+      *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+      body{background:var(--bg-page);color:var(--text-card);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:relative;}
+      .base-logo-container{position:absolute;top:20px;right:20px;display:flex;align-items:center;gap:8px;text-decoration:none;opacity:.9;z-index:50}
+      .base-logo-box{width:24px;height:24px;background:var(--base-blue);border-radius:6px;box-shadow:0 0 10px rgba(0,82,255,.5)}
+      .base-logo-text{color:#fff;font-weight:700;font-size:14px}
+      .game-container{background:var(--card-bg);padding:2rem;border-radius:16px;box-shadow:var(--card-shadow);width:100%;max-width:400px;text-align:center;border:1px solid var(--card-border);margin-top:20px}
+      header h1{font-size:2rem;margin-bottom:.5rem;font-weight:800;display:inline-flex;align-items:center;gap:5px}
+      .tic-tac-text{color:var(--text-black)}
+      .blue-link{ text-decoration:none;background:var(--accent-o);color:#fff;padding:4px 12px;border-radius:8px;font-weight:800;display:inline-block;position:relative;top:-2px;font-size:1.8rem}
+      .subtitle{font-size:.9rem;color:#666;margin-bottom:1.5rem;font-weight:500}
+      .status-bar{display:flex;justify-content:center;align-items:center;margin-bottom:1.5rem;background:rgba(0,0,0,.03);padding:8px 20px;border-radius:50px;border:1px solid #e1e4e8}
+      .player-turn{font-weight:700;font-size:1rem;color:var(--text-black)}
+      .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;padding:10px}
+      .cell{background:var(--cell-bg);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;cursor:pointer;transition:all .2s;user-select:none;color:var(--cell-text);border:1px solid var(--cell-border)}
+      .cell.o{color:var(--accent-o)} .cell.x{color:var(--accent-x)}
+      .cell.will-disappear{animation:blink-red 1s infinite;border:2px solid var(--accent-x);background:#2d1518}
+      @keyframes blink-red{0%{opacity:1}50%{opacity:.5;background:#441015}100%{opacity:1}}
+      .controls{display:flex;justify-content:center}
+      button{padding:12px 30px;border:none;border-radius:50px;font-weight:600;cursor:pointer;transition:transform .1s,background .2s;font-size:1rem;background:#f6f8fa;color:var(--text-black);border:1px solid #d0d7de}
+      .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:100;backdrop-filter:blur(5px)}
+      .modal-overlay.active{opacity:1;pointer-events:all}
+      .modal-content{background:#fff;padding:2.5rem;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.8);transition:transform .3s;max-width:90%;width:320px;border:1px solid #e1e4e8}
+      .modal-overlay.active .modal-content{transform:scale(1)}
+      .result-title{font-size:2rem;margin-bottom:1rem;font-weight:800;color:#000}
+      .result-message{color:#666;margin-bottom:1.5rem}
+      .btn-primary{background:var(--accent-o);color:#fff;width:100%;border:none;box-shadow:0 4px 15px rgba(0,82,255,.4)}
+      .btn-primary:hover{background:#0039b3;transform:translateY(-2px)}
     </style>
 </head>
 <body>
 
-    <!-- Logo Base (Teks Putih karena BG Hitam) -->
-    <a href="https://www.base.org" target="_blank" class="base-logo-container">
-        <div class="base-logo-box"></div>
-        <span class="base-logo-text">BASE</span>
-    </a>
+  <a href="https://www.base.org" target="_blank" class="base-logo-container">
+    <div class="base-logo-box"></div>
+    <span class="base-logo-text">BASE</span>
+  </a>
 
-    <!-- Bingkai Game (Putih) -->
-    <main class="game-container">
-        <header>
-            <h1>
-                <span class="tic-tac-text">Tic Tac</span>
-                <a href="https://base.app/profile/sinkkkk" target="_blank" class="blue-link">Blue</a>
-            </h1>
-            
-            <p class="subtitle">You (O) vs Computer (X)</p>
-        </header>
+  <main class="game-container">
+    <header>
+      <h1>
+        <span class="tic-tac-text">Tic Tac</span>
+        <a href="https://base.app/profile/sinkkkk" target="_blank" class="blue-link">Blue</a>
+      </h1>
+      <p class="subtitle">You (O) vs Computer (X)</p>
+    </header>
 
-        <section class="status-bar">
-            <span id="status-text" class="player-turn">Your Turn</span>
-        </section>
+    <section class="status-bar">
+      <span id="status-text" class="player-turn">Your Turn</span>
+    </section>
 
-        <section class="board" id="board">
-            <!-- Generated by JS -->
-        </section>
+    <section class="board" id="board"></section>
 
-        <section class="controls">
-            <button class="btn-restart" id="reset-btn">Reset Board</button>
-        </section>
-    </main>
+    <section class="controls">
+      <button class="btn-restart" id="reset-btn">Reset Board</button>
+    </section>
+  </main>
 
-    <!-- Modal Result -->
-    <div class="modal-overlay" id="result-modal">
-        <div class="modal-content">
-            <h2 class="result-title" id="modal-title">You Win!</h2>
-            <p class="result-message" id="modal-msg">Great strategy.</p>
-            <button class="btn-primary" id="rematch-btn">Rematch</button>
-        </div>
+  <div class="modal-overlay" id="result-modal">
+    <div class="modal-content">
+      <h2 class="result-title" id="modal-title">You Win!</h2>
+      <p class="result-message" id="modal-msg">Great strategy.</p>
+      <button class="btn-primary" id="rematch-btn">Rematch</button>
     </div>
+  </div>
 
-    <!-- SCRIPT GAME UTAMA -->
-    <script>
-        /* 
-         * LOGIKA GAME
-         * Human (You) = O (Biru Base)
-         * AI (Computer) = X (Merah)
-         * UPDATE: Blink effect sekarang aktif terus (Always On) jika piece count == 3
-         */
+  <!-- GAME SCRIPT -->
+  <script>
+    const boardElement = document.getElementById('board');
+    const statusText = document.getElementById('status-text');
+    const resetBtn = document.getElementById('reset-btn');
+    const modal = document.getElementById('result-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMsg = document.getElementById('modal-msg');
+    const rematchBtn = document.getElementById('rematch-btn');
 
-        const boardElement = document.getElementById('board');
-        const statusText = document.getElementById('status-text');
-        const resetBtn = document.getElementById('reset-btn');
-        const modal = document.getElementById('result-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMsg = document.getElementById('modal-msg');
-        const rematchBtn = document.getElementById('rematch-btn');
+    let board = ["","","","","","","","",""];
+    let humanMoveHistory = [];
+    let aiMoveHistory = [];
+    let gameActive = true;
+    const HUMAN_PLAYER = 'o', AI_PLAYER = 'x';
+    const winningConditions = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
-        let board = ["", "", "", "", "", "", "", ""];
-        let humanMoveHistory = []; 
-        let aiMoveHistory = [];
-        
-        let gameActive = true;
-        
-        const HUMAN_PLAYER = 'o'; 
-        const AI_PLAYER = 'x';
-        
-        const winningConditions = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ];
+    function initGame(){
+      boardElement.innerHTML = "";
+      board = ["","","","","","","","",""];
+      humanMoveHistory = [];
+      aiMoveHistory = [];
+      gameActive = true;
+      statusText.innerText = "Your Turn";
+      modal.classList.remove('active');
+      for(let i=0;i<9;i++){
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.setAttribute('data-index', i);
+        cell.addEventListener('click', ()=> handleCellClick(i));
+        boardElement.appendChild(cell);
+      }
+      updateBlinkState();
+      try { if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
+    }
 
-        function initGame() {
-            boardElement.innerHTML = "";
-            board = ["", "", "", "", "", "", "", ""];
-            humanMoveHistory = [];
-            aiMoveHistory = [];
-            gameActive = true;
-            statusText.innerText = "Your Turn";
-            modal.classList.remove('active');
+    function handleCellClick(i){
+      if (board[i] !== "" || !gameActive) return;
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      makeMove(i, HUMAN_PLAYER, humanMoveHistory);
+      if (checkWin(board, HUMAN_PLAYER)){ endGame(false); return; }
+      statusText.innerText = "Computer Thinking...";
+      gameActive = false;
+      setTimeout(()=>{
+        const aiMoveObj = minimax(board, humanMoveHistory, aiMoveHistory, 0, false);
+        const bestMoveIndex = aiMoveObj.index;
+        makeMove(bestMoveIndex, AI_PLAYER, aiMoveHistory);
+        if (checkWin(board, AI_PLAYER)){ endGame(false, true); }
+        else { gameActive = true; statusText.innerText = "Your Turn"; updateBlinkState(); }
+      },600);
+    }
 
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.setAttribute('data-index', i);
-                cell.addEventListener('click', () => handleCellClick(i));
-                boardElement.appendChild(cell);
-            }
-            
-            updateBlinkState();
-            
-            // PANGGIL NOTIFY READY SETELAH UPDATEBLINKSTATE (Sesuai instruksi AI)
-            try { if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
+    function makeMove(index, player, history){
+      history.push(index);
+      board[index] = player;
+      const cell = boardElement.children[index];
+      cell.innerText = player.toUpperCase();
+      cell.classList.add('taken', player);
+      if (history.length > 3){
+        const removeIndex = history.shift();
+        board[removeIndex] = "";
+        const removedCell = boardElement.children[removeIndex];
+        if(removedCell){ removedCell.innerText = ""; removedCell.classList.remove('taken','x','o'); }
+      }
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+    }
+
+    function updateBlinkState(){
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      if (gameActive && humanMoveHistory.length === 3){
+        const oldestIndex = humanMoveHistory[0];
+        const oldestCell = boardElement.children[oldestIndex];
+        if(oldestCell) oldestCell.classList.add('will-disappear');
+      }
+    }
+
+    function checkWin(currentBoard, player){
+      return winningConditions.some(condition => condition.every(idx => currentBoard[idx] === player));
+    }
+
+    function endGame(draw, aiWins = false){
+      gameActive = false;
+      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      if (draw){ modalTitle.innerText = "Draw!"; modalTitle.style.color = "#000"; modalMsg.innerText = "Unbelievable."; }
+      else {
+        if (aiWins){ modalTitle.innerText = "You Lose!"; modalTitle.style.color = "#ff4757"; modalMsg.innerText = "The AI outsmarted you."; }
+        else { modalTitle.innerText = "You Win!"; modalTitle.style.color = "#0052FF"; modalMsg.innerText = "Great moves!"; }
+      }
+      modal.classList.add('active');
+    }
+
+    function minimax(newBoard, hHist, aHist, depth, isMaximizing){
+      if (checkWin(newBoard, AI_PLAYER)) return { score: 10 - depth };
+      if (checkWin(newBoard, HUMAN_PLAYER)) return { score: depth - 10 };
+      if (depth >= 6) return { score: 0 };
+      const availSpots = newBoard.map((v,idx)=> v===""? idx : null).filter(v => v !== null);
+      if (availSpots.length === 0) return { score: 0 };
+      const moves = [];
+      for (let i=0;i<availSpots.length;i++){
+        const move = {}; move.index = availSpots[i];
+        let nextHuman = [...hHist], nextAi = [...aHist], boardCopy = [...newBoard];
+        if (isMaximizing){
+          boardCopy[availSpots[i]] = AI_PLAYER; nextAi.push(availSpots[i]);
+          if (nextAi.length > 3){ const rm = nextAi.shift(); boardCopy[rm] = ""; }
+          const result = minimax(boardCopy, nextHuman, nextAi, depth+1, false); move.score = result.score;
+        } else {
+          boardCopy[availSpots[i]] = HUMAN_PLAYER; nextHuman.push(availSpots[i]);
+          if (nextHuman.length > 3){ const rm = nextHuman.shift(); boardCopy[rm] = ""; }
+          const result = minimax(boardCopy, nextHuman, nextAi, depth+1, true); move.score = result.score;
         }
+        moves.push(move);
+      }
+      let bestMove;
+      if (isMaximizing){ let bestScore = -99999; for(let i=0;i<moves.length;i++) if(moves[i].score > bestScore){ bestScore = moves[i].score; bestMove = i; } }
+      else { let bestScore = 99999; for(let i=0;i<moves.length;i++) if(moves[i].score < bestScore){ bestScore = moves[i].score; bestMove = i; } }
+      return moves[bestMove];
+    }
 
-        function handleCellClick(clickedIndex) {
-            if (board[clickedIndex] !== "" || !gameActive) return;
+    resetBtn.addEventListener('click', initGame);
+    rematchBtn.addEventListener('click', initGame);
 
-            document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
+    initGame();
+  </script>
 
-            makeMove(clickedIndex, HUMAN_PLAYER, humanMoveHistory);
+  <!-- SDK module + minimal ready() call (preferred) -->
+  <script type="module">
+    // Module import attempt (preferred path). If CDN module fails, robust loader below will fallback.
+    try {
+      // import as module; some CDNs may not support module named export — ignore errors, fallback will handle
+      const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js');
+      const sdk = mod && (mod.sdk || mod.default || mod);
+      async function callSdkReadyOnce(){
+        if (window.__miniapp_ready_called) return;
+        try {
+          if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+            await sdk.actions.ready();
+            console.log('[MiniApp] sdk.actions.ready() OK (module)');
+            window.__miniapp_ready_called = true;
+            return;
+          }
+        } catch(e){ console.warn('[MiniApp] sdk.ready(module) error', e); }
+        // if not ok, allow fallback (robust loader) to run
+      }
+      window.addEventListener('load', ()=> setTimeout(callSdkReadyOnce, 200), { once: true });
+    } catch(e){
+      console.warn('[MiniApp] module import failed, will use loader fallback', e);
+    }
+  </script>
 
-            if (checkWin(board, HUMAN_PLAYER)) {
-                endGame(false);
-                return;
-            }
-
-            statusText.innerText = "Computer Thinking...";
-            gameActive = false; 
-            
-            setTimeout(() => {
-                const aiMoveObj = minimax(board, humanMoveHistory, aiMoveHistory, 0, false);
-                const bestMoveIndex = aiMoveObj.index;
-
-                makeMove(bestMoveIndex, AI_PLAYER, aiMoveHistory);
-
-                if (checkWin(board, AI_PLAYER)) {
-                    endGame(false, true);
-                } else {
-                    gameActive = true;
-                    statusText.innerText = "Your Turn";
-                    updateBlinkState();
-                }
-            }, 600);
-        }
-
-        function makeMove(index, player, history) {
-            history.push(index);
-            board[index] = player;
-
-            const cell = boardElement.children[index];
-            cell.innerText = player.toUpperCase();
-            cell.classList.add('taken', player);
-
-            if (history.length > 3) {
-                const removeIndex = history.shift();
-                board[removeIndex] = "";
-                
-                const removedCell = boardElement.children[removeIndex];
-                removedCell.innerText = "";
-                removedCell.classList.remove('taken', 'x', 'o');
-            }
-            
-            document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
-        }
-
-        function updateBlinkState() {
-            document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
-
-            if (gameActive && humanMoveHistory.length === 3) {
-                const oldestIndex = humanMoveHistory[0];
-                const oldestCell = boardElement.children[oldestIndex];
-                if(oldestCell) {
-                    oldestCell.classList.add('will-disappear');
-                }
-            }
-        }
-
-        function checkWin(currentBoard, player) {
-            return winningConditions.some(condition => {
-                return condition.every(index => {
-                    return currentBoard[index] === player;
-                });
-            });
-        }
-
-        function endGame(draw, aiWins = false) {
-            gameActive = false;
-            document.querySelectorAll('.will-disappear').forEach(el => el.classList.remove('will-disappear'));
-
-            if (draw) {
-                modalTitle.innerText = "Draw!";
-                modalTitle.style.color = "#000";
-                modalMsg.innerText = "Unbelievable.";
-            } else {
-                if (aiWins) {
-                    modalTitle.innerText = "You Lose!";
-                    modalTitle.style.color = "#ff4757";
-                    modalMsg.innerText = "The AI outsmarted you.";
-                } else {
-                    modalTitle.innerText = "You Win!";
-                    modalTitle.style.color = "#0052FF";
-                    modalMsg.innerText = "Great moves!";
-                }
-            }
-            modal.classList.add('active');
-        }
-
-        function minimax(newBoard, hHist, aHist, depth, isMaximizing) {
-            if (checkWin(newBoard, AI_PLAYER)) return { score: 10 - depth };
-            if (checkWin(newBoard, HUMAN_PLAYER)) return { score: depth - 10 };
-            if (depth >= 6) return { score: 0 };
-
-            const availSpots = newBoard.map((val, idx) => val === "" ? idx : null).filter(val => val !== null);
-            if (availSpots.length === 0) return { score: 0 };
-
-            const moves = [];
-
-            for (let i = 0; i < availSpots.length; i++) {
-                const move = {};
-                move.index = availSpots[i];
-                
-                let nextHumanHist = [...hHist];
-                let nextAiHist = [...aHist];
-                let currentBoard = [...newBoard];
-
-                if (isMaximizing) {
-                    currentBoard[availSpots[i]] = AI_PLAYER;
-                    nextAiHist.push(availSpots[i]);
-                    
-                    if (nextAiHist.length > 3) {
-                        const removedIdx = nextAiHist.shift();
-                        currentBoard[removedIdx] = "";
-                    }
-
-                    const result = minimax(currentBoard, nextHumanHist, nextAiHist, depth + 1, false);
-                    move.score = result.score;
-
-                } else {
-                    currentBoard[availSpots[i]] = HUMAN_PLAYER;
-                    nextHumanHist.push(availSpots[i]);
-
-                    if (nextHumanHist.length > 3) {
-                        const removedIdx = nextHumanHist.shift();
-                        currentBoard[removedIdx] = "";
-                    }
-
-                    const result = minimax(currentBoard, nextHumanHist, nextAiHist, depth + 1, true);
-                    move.score = result.score;
-                }
-
-                moves.push(move);
-            }
-
-            let bestMove;
-            if (isMaximizing) {
-                let bestScore = -10000;
-                for (let i = 0; i < moves.length; i++) {
-                    if (moves[i].score > bestScore) {
-                        bestScore = moves[i].score;
-                        bestMove = i;
-                    }
-                }
-            } else {
-                let bestScore = 10000;
-                for (let i = 0; i < moves.length; i++) {
-                    if (moves[i].score < bestScore) {
-                        bestScore = moves[i].score;
-                        bestMove = i;
-                    }
-                }
-            }
-
-            return moves[bestMove];
-        }
-
-        resetBtn.addEventListener('click', initGame);
-        rematchBtn.addEventListener('click', initGame);
-
-        initGame();
-    </script>
-
-    <!-- TAMBAHKAN SCRIPT ROBUST LOADER (Sesuai instruksi AI sebelah) -->
-    <script>
-    /* Robust loader + poller untuk Farcaster SDK, lalu panggil sdk.actions.ready().
-       Jika gagal, fallback ke postMessage. Juga panggil notify setelah initGame selesai.
-    */
-
-    function loadScriptOnce(url) {
-      return new Promise((resolve, reject) => {
+  <!-- ROBUST LOADER + fallback postMessage (keeps notifyBaseReady exposed) -->
+  <script>
+    function loadScriptOnce(url){
+      return new Promise((resolve,reject)=>{
         if (document.querySelector('script[data-src="'+url+'"]')) return resolve();
-        const s = document.createElement('script');
-        s.src = url;
-        s.async = true;
-        s.setAttribute('data-src', url);
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error('failed load '+url));
+        const s=document.createElement('script');
+        s.src=url; s.async=true; s.setAttribute('data-src',url);
+        s.onload = ()=>resolve(); s.onerror = ()=>reject(new Error('failed load '+url));
         document.head.appendChild(s);
       });
     }
 
-    async function ensureSdkLoaded() {
+    async function ensureSdkLoaded(){
       const cdns = [
         'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js',
         'https://unpkg.com/@farcaster/miniapp-sdk/dist/index.min.js'
       ];
-      for (const url of cdns) {
+      for (const url of cdns){
         try {
           await loadScriptOnce(url);
-          // small delay to allow global to appear
-          await new Promise(r => setTimeout(r, 200));
+          await new Promise(r=>setTimeout(r,200));
           if (window.sdk || window.farcaster) return true;
         } catch(e){}
       }
       return !!(window.sdk || window.farcaster);
     }
 
-    function tryCallSdkReady() {
+    function tryCallSdkReady(){
       try {
+        if (window.__miniapp_ready_called) return Promise.resolve({ok:true, which:'already'});
         if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          return sdk.actions.ready().then(()=>({ok:true, which:'sdk'})).catch(err=>({ok:false, err, which:'sdk'}));
+          return sdk.actions.ready().then(()=>{ window.__miniapp_ready_called = true; return {ok:true, which:'sdk'} }).catch(err=>({ok:false,err,which:'sdk'}));
         }
         if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-          return farcaster.actions.ready().then(()=>{ok:true, which:'farcaster'}).catch(err=>({ok:false, err, which:'farcaster'}));
+          return farcaster.actions.ready().then(()=>{ window.__miniapp_ready_called = true; return {ok:true, which:'farcaster'} }).catch(err=>({ok:false,err,which:'farcaster'}));
         }
-      } catch(e){ return Promise.resolve({ok:false, err:e, which:'throw'}); }
-      return Promise.resolve({ok:false, err:new Error('no-sdk'), which:'none'});
+      } catch(e){ return Promise.resolve({ok:false,err:e,which:'throw'}); }
+      return Promise.resolve({ok:false,err:new Error('no-sdk'),which:'none'});
     }
 
-    function sendFallbackReady() {
+    function sendFallbackReady(){
+      if (window.__miniapp_ready_called) { console.log('[Miniapp] ready already called, skipping fallback'); return; }
       try {
-        const payload = { type:'miniapp:ready', version:'1', href: window.location.href, timestamp: Date.now(), ready: true };
-        // try exact origin then wildcard
-        try {
-            window.parent.postMessage(payload, 'https://www.base.dev');
-        } catch(e){}
-        // fallback wildcard
-        try {
-            window.parent.postMessage(payload, '*');
-        } catch(e){}
-        
+        const payload = { type:'miniapp:ready', version:'1', href:window.location.href, timestamp:Date.now(), ready:true };
+        try{ window.parent.postMessage(payload, 'https://www.base.dev'); }catch(e){}
+        try{ window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev'); }catch(e){}
+        try{ window.parent.postMessage(payload, '*'); }catch(e){}
         console.log('[Miniapp] fallback ready posted');
-      } catch(e) {
-        console.warn('[Miniapp] fallback postMessage failed', e);
-      }
+      } catch(e){ console.warn('[Miniapp] fallback postMessage failed', e); }
     }
 
-    // main notify function
-    async function notifyBaseReady() {
+    async function notifyBaseReady(){
+      if (window.__miniapp_ready_called) { console.log('[Miniapp] already ready'); return; }
       console.log('[Miniapp] notifyBaseReady start');
-      // 1) try ensure sdk is loaded (attempt multiple cdn urls)
       const sdkLoaded = await ensureSdkLoaded();
       console.log('[Miniapp] sdkLoaded?', sdkLoaded, 'window.sdk?', !!window.sdk, 'window.farcaster?', !!window.farcaster);
-
-      // 2) try to call sdk.ready
       const res = await tryCallSdkReady();
-      if (res.ok) {
-        console.log('[Miniapp] sdk.actions.ready() OK via', res.which);
-        return;
-      } else {
-        console.warn('[Miniapp] sdk.actions.ready() not OK:', res.which, res.err);
-      }
-
-      // 3) fallback: send postMessage (still useful)
+      if (res && res.ok) { console.log('[Miniapp] sdk.actions.ready() OK via', res.which); return; }
+      console.warn('[Miniapp] sdk.actions.ready() not OK:', res.which, res.err);
       sendFallbackReady();
     }
 
-    // ensure notifyBaseReady runs after initGame UI ready
-    // call it after load and also call it at end of initGame (redundant safe)
+    // run after load (and also callable from initGame)
+    if (document.readyState === 'complete') { setTimeout(notifyBaseReady, 200); }
+    else { window.addEventListener('load', ()=> setTimeout(notifyBaseReady, 200), { once:true }); }
 
-    // call on load
-    if (document.readyState === 'complete') {
-      notifyBaseReady();
-    } else {
-      window.addEventListener('load', notifyBaseReady, { once: true });
-    }
-    
-    // also expose so you can call after UI init
+    // expose for initGame
     window.notifyBaseReady = notifyBaseReady;
-    </script>
+  </script>
 </body>
 </html>
