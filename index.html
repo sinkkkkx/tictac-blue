@@ -1,112 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" href="/icon.png">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tic Tac Blue</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Tic Tac Blue</title>
 
-    <!-- Base app id -->
-    <meta name="base:app_id" content="697a1c119266edba958ff4c6">
+  <!-- Base app id -->
+  <meta name="base:app_id" content="697a1c119266edba958ff4c6">
 
-    <!-- PWA manifest -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0052FF">
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0052FF">
 
-    <!-- Embed metadata: primary (fc:frame) + fallback (fc:miniapp=true) -->
-    <meta name="fc:frame" content='{
-      "version":"next",
-      "imageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
-      "button": {
-        "title":"Play Tic Tac Blue",
-        "action": {
-          "type":"launch_frame",
-          "name":"Tic Tac Blue",
-          "url":"https://tictac-blue-eight.vercel.app",
-          "splashImageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
-          "splashBackgroundColor":"#000000"
-        }
-      }
-    }'/>
-    <meta name="fc:miniapp" content="true" />
+  <!-- Embed metadata: preferred fc:frame + fallback fc:miniapp -->
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png"}'/>
+  <meta name="fc:miniapp" content="true"/>
 
-    <style>
-      /* (styles unchanged) */
-      :root{
-        --bg-page:#000;
-        --card-bg:#fff; --card-border:#e1e4e8; --card-shadow:0 10px 50px rgba(255,255,255,0.15);
-        --text-card:#0d1117; --text-black:#000;
-        --cell-bg:#161b22; --cell-border:#30363d; --cell-text:#c9d1d9;
-        --accent-x:#ff4757; --accent-o:#0052FF; --base-blue:#0052FF;
-      }
-      *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-      body{background:var(--bg-page);color:var(--text-card);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:relative;}
-      .base-logo-container{position:absolute;top:20px;right:20px;display:flex;align-items:center;gap:8px;text-decoration:none;opacity:.9;z-index:50}
-      .base-logo-box{width:24px;height:24px;background:var(--base-blue);border-radius:6px;box-shadow:0 0 10px rgba(0,82,255,.5)}
-      .base-logo-text{color:#fff;font-weight:700;font-size:14px}
-      .game-container{background:var(--card-bg);padding:2rem;border-radius:16px;box-shadow:var(--card-shadow);width:100%;max-width:400px;text-align:center;border:1px solid var(--card-border);margin-top:20px}
-      header h1{font-size:2rem;margin-bottom:.5rem;font-weight:800;display:inline-flex;align-items:center;gap:5px}
-      .tic-tac-text{color:var(--text-black)}
-      .blue-link{ text-decoration:none;background:var(--accent-o);color:#fff;padding:4px 12px;border-radius:8px;font-weight:800;display:inline-block;position:relative;top:-2px;font-size:1.8rem}
-      .subtitle{font-size:.9rem;color:#666;margin-bottom:1.5rem;font-weight:500}
-      .status-bar{display:flex;justify-content:center;align-items:center;margin-bottom:1.5rem;background:rgba(0,0,0,.03);padding:8px 20px;border-radius:50px;border:1px solid #e1e4e8}
-      .player-turn{font-weight:700;font-size:1rem;color:var(--text-black)}
-      .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;padding:10px}
-      .cell{background:var(--cell-bg);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;cursor:pointer;transition:all .2s;user-select:none;color:var(--cell-text);border:1px solid var(--cell-border)}
-      .cell.o{color:var(--accent-o)} .cell.x{color:var(--accent-x)}
-      .cell.will-disappear{animation:blink-red 1s infinite;border:2px solid var(--accent-x);background:#2d1518}
-      @keyframes blink-red{0%{opacity:1}50%{opacity:.5;background:#441015}100%{opacity:1}}
-      .controls{display:flex;justify-content:center}
-      button{padding:12px 30px;border:none;border-radius:50px;font-weight:600;cursor:pointer;transition:transform .1s,background .2s;font-size:1rem;background:#f6f8fa;color:var(--text-black);border:1px solid #d0d7de}
-      .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:100;backdrop-filter:blur(5px)}
-      .modal-overlay.active{opacity:1;pointer-events:all}
-      .modal-content{background:#fff;padding:2.5rem;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:scale(.8);transition:transform .3s;max-width:90%;width:320px;border:1px solid #e1e4e8}
-      .modal-overlay.active .modal-content{transform:scale(1)}
-      .result-title{font-size:2rem;margin-bottom:1rem;font-weight:800;color:#000}
-      .result-message{color:#666;margin-bottom:1.5rem}
-      .btn-primary{background:var(--accent-o);color:#fff;width:100%;border:none;box-shadow:0 4px 15px rgba(0,82,255,.4)}
-      .btn-primary:hover{background:#0039b3;transform:translateY(-2px)}
-    </style>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+
+  <style>
+    /* --- styles (sama seperti sebelumnya, ringkas) --- */
+    :root{--bg:#000;--card:#fff;--card-border:#e1e4e8;--accent-o:#0052FF;--accent-x:#ff4757}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+    body{background:var(--bg);color:#0d1117;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .game-container{background:var(--card);padding:2rem;border-radius:16px;box-shadow:0 10px 50px rgba(0,0,0,.25);width:100%;max-width:420px;border:1px solid var(--card-border);text-align:center}
+    header h1{font-size:2rem;font-weight:800;display:inline-flex;align-items:center;gap:8px}
+    .blue-link{background:var(--accent-o);color:#fff;padding:4px 12px;border-radius:8px;font-weight:800;text-decoration:none;font-size:1.6rem}
+    .subtitle{color:#666;margin-bottom:1rem}
+    .status-bar{margin-bottom:1rem;padding:8px 20px;border-radius:50px;border:1px solid #e1e4e8;background:rgba(0,0,0,.03)}
+    .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px;margin-bottom:1rem}
+    .cell{background:#161b22;color:#c9d1d9;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;border:1px solid #30363d;cursor:pointer}
+    .cell.o{color:var(--accent-o)}.cell.x{color:var(--accent-x)}
+    button{padding:10px 24px;border-radius:999px;border:1px solid #d0d7de;background:#f6f8fa;font-weight:700;cursor:pointer}
+    .modal-overlay{display:none}
+    .modal-overlay.active{display:flex}
+  </style>
 </head>
 <body>
 
-  <a href="https://www.base.org" target="_blank" class="base-logo-container">
-    <div class="base-logo-box"></div>
-    <span class="base-logo-text">BASE</span>
-  </a>
-
-  <main class="game-container">
+  <main class="game-container" role="main">
     <header>
-      <h1>
-        <span class="tic-tac-text">Tic Tac</span>
-        <a href="https://base.app/profile/sinkkkk" target="_blank" class="blue-link">Blue</a>
-      </h1>
+      <h1><span>Tic Tac</span> <a class="blue-link" href="https://base.app/profile/sinkkkk" target="_blank" rel="noreferrer">Blue</a></h1>
       <p class="subtitle">You (O) vs Computer (X)</p>
     </header>
 
-    <section class="status-bar">
-      <span id="status-text" class="player-turn">Your Turn</span>
-    </section>
+    <div class="status-bar"><span id="status-text">Your Turn</span></div>
 
-    <section class="board" id="board"></section>
+    <section id="board" class="board" aria-label="game board"></section>
 
-    <section class="controls">
-      <button class="btn-restart" id="reset-btn">Reset Board</button>
-    </section>
+    <div style="display:flex;justify-content:center;"><button id="reset-btn">Reset Board</button></div>
   </main>
 
-  <div class="modal-overlay" id="result-modal">
+  <div id="result-modal" class="modal-overlay" aria-hidden="true">
     <div class="modal-content">
-      <h2 class="result-title" id="modal-title">You Win!</h2>
-      <p class="result-message" id="modal-msg">Great strategy.</p>
-      <button class="btn-primary" id="rematch-btn">Rematch</button>
+      <h2 id="modal-title">You Win!</h2>
+      <p id="modal-msg">Great moves!</p>
+      <button id="rematch-btn">Rematch</button>
     </div>
   </div>
 
-  <!-- GAME SCRIPT -->
+  <!-- GAME LOGIC -->
   <script>
-    const boardElement = document.getElementById('board');
+    const boardEl = document.getElementById('board');
     const statusText = document.getElementById('status-text');
     const resetBtn = document.getElementById('reset-btn');
     const modal = document.getElementById('result-modal');
@@ -114,213 +70,151 @@
     const modalMsg = document.getElementById('modal-msg');
     const rematchBtn = document.getElementById('rematch-btn');
 
-    let board = ["","","","","","","","",""];
-    let humanMoveHistory = [];
-    let aiMoveHistory = [];
+    let board = Array(9).fill('');
+    let humanHistory = [], aiHistory = [];
     let gameActive = true;
-    const HUMAN_PLAYER = 'o', AI_PLAYER = 'x';
-    const winningConditions = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    const HUMAN='o', AI='x';
+    const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
     function initGame(){
-      boardElement.innerHTML = "";
-      board = ["","","","","","","","",""];
-      humanMoveHistory = [];
-      aiMoveHistory = [];
-      gameActive = true;
-      statusText.innerText = "Your Turn";
-      modal.classList.remove('active');
+      board = Array(9).fill('');
+      humanHistory = []; aiHistory = []; gameActive=true;
+      statusText.innerText='Your Turn';
+      modal.classList.remove('active'); modal.setAttribute('aria-hidden','true');
+      boardEl.innerHTML='';
       for(let i=0;i<9;i++){
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.setAttribute('data-index', i);
-        cell.addEventListener('click', ()=> handleCellClick(i));
-        boardElement.appendChild(cell);
+        const c=document.createElement('div');
+        c.className='cell'; c.dataset.index=i;
+        c.addEventListener('click', ()=> handleClick(i));
+        boardEl.appendChild(c);
       }
-      updateBlinkState();
+      updateBlink();
+      // notify ready after UI render
       try { if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
     }
 
-    function handleCellClick(i){
-      if (board[i] !== "" || !gameActive) return;
-      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
-      makeMove(i, HUMAN_PLAYER, humanMoveHistory);
-      if (checkWin(board, HUMAN_PLAYER)){ endGame(false); return; }
-      statusText.innerText = "Computer Thinking...";
-      gameActive = false;
+    function handleClick(i){
+      if(board[i]!=='' || !gameActive) return;
+      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
+      move(i,HUMAN, humanHistory);
+      if(checkWin(board,HUMAN)){ finish(false); return; }
+      statusText.innerText='Computer Thinking...'; gameActive=false;
       setTimeout(()=>{
-        const aiMoveObj = minimax(board, humanMoveHistory, aiMoveHistory, 0, false);
-        const bestMoveIndex = aiMoveObj.index;
-        makeMove(bestMoveIndex, AI_PLAYER, aiMoveHistory);
-        if (checkWin(board, AI_PLAYER)){ endGame(false, true); }
-        else { gameActive = true; statusText.innerText = "Your Turn"; updateBlinkState(); }
+        const mv = minimax(board, humanHistory, aiHistory,0,false).index;
+        move(mv,AI, aiHistory);
+        if(checkWin(board,AI)){ finish(false,true); } else { gameActive=true; statusText.innerText='Your Turn'; updateBlink(); }
       },600);
     }
 
-    function makeMove(index, player, history){
-      history.push(index);
-      board[index] = player;
-      const cell = boardElement.children[index];
+    function move(idx,player,history){
+      history.push(idx); board[idx]=player;
+      const cell = boardEl.children[idx];
       cell.innerText = player.toUpperCase();
       cell.classList.add('taken', player);
-      if (history.length > 3){
-        const removeIndex = history.shift();
-        board[removeIndex] = "";
-        const removedCell = boardElement.children[removeIndex];
-        if(removedCell){ removedCell.innerText = ""; removedCell.classList.remove('taken','x','o'); }
+      if(history.length>3){
+        const r = history.shift();
+        board[r] = '';
+        const rc = boardEl.children[r];
+        if(rc){ rc.innerText=''; rc.classList.remove('taken','x','o'); }
       }
-      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
     }
 
-    function updateBlinkState(){
-      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
-      if (gameActive && humanMoveHistory.length === 3){
-        const oldestIndex = humanMoveHistory[0];
-        const oldestCell = boardElement.children[oldestIndex];
-        if(oldestCell) oldestCell.classList.add('will-disappear');
+    function updateBlink(){
+      document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
+      if(gameActive && humanHistory.length===3){
+        const oldest = humanHistory[0]; const el = boardEl.children[oldest];
+        if(el) el.classList.add('will-disappear');
       }
     }
 
-    function checkWin(currentBoard, player){
-      return winningConditions.some(condition => condition.every(idx => currentBoard[idx] === player));
+    function checkWin(b, p){ return wins.some(w=> w.every(i=> b[i]===p)); }
+
+    function finish(draw, aiWins=false){
+      gameActive=false; document.querySelectorAll('.will-disappear').forEach(x=>x.classList.remove('will-disappear'));
+      if(draw){ modalTitle.innerText='Draw!'; modalMsg.innerText='Unbelievable.'; }
+      else { if(aiWins){ modalTitle.innerText='You Lose!'; modalMsg.innerText='The AI outsmarted you.'; } else { modalTitle.innerText='You Win!'; modalMsg.innerText='Great moves!'; } }
+      modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
     }
 
-    function endGame(draw, aiWins = false){
-      gameActive = false;
-      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
-      if (draw){ modalTitle.innerText = "Draw!"; modalTitle.style.color = "#000"; modalMsg.innerText = "Unbelievable."; }
-      else {
-        if (aiWins){ modalTitle.innerText = "You Lose!"; modalTitle.style.color = "#ff4757"; modalMsg.innerText = "The AI outsmarted you."; }
-        else { modalTitle.innerText = "You Win!"; modalTitle.style.color = "#0052FF"; modalMsg.innerText = "Great moves!"; }
-      }
-      modal.classList.add('active');
-    }
-
-    function minimax(newBoard, hHist, aHist, depth, isMaximizing){
-      if (checkWin(newBoard, AI_PLAYER)) return { score: 10 - depth };
-      if (checkWin(newBoard, HUMAN_PLAYER)) return { score: depth - 10 };
-      if (depth >= 6) return { score: 0 };
-      const availSpots = newBoard.map((v,idx)=> v===""? idx : null).filter(v => v !== null);
-      if (availSpots.length === 0) return { score: 0 };
-      const moves = [];
-      for (let i=0;i<availSpots.length;i++){
-        const move = {}; move.index = availSpots[i];
-        let nextHuman = [...hHist], nextAi = [...aHist], boardCopy = [...newBoard];
-        if (isMaximizing){
-          boardCopy[availSpots[i]] = AI_PLAYER; nextAi.push(availSpots[i]);
-          if (nextAi.length > 3){ const rm = nextAi.shift(); boardCopy[rm] = ""; }
-          const result = minimax(boardCopy, nextHuman, nextAi, depth+1, false); move.score = result.score;
+    function minimax(b,h,a,depth,isMax){
+      if(checkWin(b,AI)) return {score:10-depth};
+      if(checkWin(b,HUMAN)) return {score:depth-10};
+      if(depth>=6) return {score:0};
+      const avail = b.map((v,i)=> v===''?i:null).filter(v=>v!==null);
+      if(avail.length===0) return {score:0};
+      const moves=[];
+      for(let i=0;i<avail.length;i++){
+        const mv={index:avail[i]};
+        let nb=[...b], nh=[...h], na=[...a];
+        if(isMax){
+          nb[avail[i]] = AI; na.push(avail[i]);
+          if(na.length>3){ const r=na.shift(); nb[r]=''; }
+          mv.score = minimax(nb,nh,na,depth+1,false).score;
         } else {
-          boardCopy[availSpots[i]] = HUMAN_PLAYER; nextHuman.push(availSpots[i]);
-          if (nextHuman.length > 3){ const rm = nextHuman.shift(); boardCopy[rm] = ""; }
-          const result = minimax(boardCopy, nextHuman, nextAi, depth+1, true); move.score = result.score;
+          nb[avail[i]] = HUMAN; nh.push(avail[i]);
+          if(nh.length>3){ const r=nh.shift(); nb[r]=''; }
+          mv.score = minimax(nb,nh,na,depth+1,true).score;
         }
-        moves.push(move);
+        moves.push(mv);
       }
-      let bestMove;
-      if (isMaximizing){ let bestScore = -99999; for(let i=0;i<moves.length;i++) if(moves[i].score > bestScore){ bestScore = moves[i].score; bestMove = i; } }
-      else { let bestScore = 99999; for(let i=0;i<moves.length;i++) if(moves[i].score < bestScore){ bestScore = moves[i].score; bestMove = i; } }
+      let bestMove; if(isMax){ let best=-99999; for(let i=0;i<moves.length;i++) if(moves[i].score>best){best=moves[i].score; bestMove=i;} }
+      else { let best=99999; for(let i=0;i<moves.length;i++) if(moves[i].score<best){best=moves[i].score; bestMove=i;} }
       return moves[bestMove];
     }
 
     resetBtn.addEventListener('click', initGame);
     rematchBtn.addEventListener('click', initGame);
 
+    // init UI
     initGame();
   </script>
 
-  <!-- SDK module + minimal ready() call (preferred) -->
-  <script type="module">
-    // Module import attempt (preferred path). If CDN module fails, robust loader below will fallback.
-    try {
-      // import as module; some CDNs may not support module named export — ignore errors, fallback will handle
-      const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js');
-      const sdk = mod && (mod.sdk || mod.default || mod);
-      async function callSdkReadyOnce(){
-        if (window.__miniapp_ready_called) return;
-        try {
-          if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-            await sdk.actions.ready();
-            console.log('[MiniApp] sdk.actions.ready() OK (module)');
-            window.__miniapp_ready_called = true;
-            return;
-          }
-        } catch(e){ console.warn('[MiniApp] sdk.ready(module) error', e); }
-        // if not ok, allow fallback (robust loader) to run
-      }
-      window.addEventListener('load', ()=> setTimeout(callSdkReadyOnce, 200), { once: true });
-    } catch(e){
-      console.warn('[MiniApp] module import failed, will use loader fallback', e);
-    }
-  </script>
-
-  <!-- ROBUST LOADER + fallback postMessage (keeps notifyBaseReady exposed) -->
+  <!-- notifyBaseReady: try module import sdk -> use global -> fallback postMessage (single, not spam) -->
   <script>
-    function loadScriptOnce(url){
-      return new Promise((resolve,reject)=>{
-        if (document.querySelector('script[data-src="'+url+'"]')) return resolve();
-        const s=document.createElement('script');
-        s.src=url; s.async=true; s.setAttribute('data-src',url);
-        s.onload = ()=>resolve(); s.onerror = ()=>reject(new Error('failed load '+url));
-        document.head.appendChild(s);
-      });
-    }
-
-    async function ensureSdkLoaded(){
-      const cdns = [
-        'https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js',
-        'https://unpkg.com/@farcaster/miniapp-sdk/dist/index.min.js'
-      ];
-      for (const url of cdns){
-        try {
-          await loadScriptOnce(url);
-          await new Promise(r=>setTimeout(r,200));
-          if (window.sdk || window.farcaster) return true;
-        } catch(e){}
-      }
-      return !!(window.sdk || window.farcaster);
-    }
-
-    function tryCallSdkReady(){
+    async function notifyBaseReady(){
+      if (window.__miniapp_ready_called) return;
+      // 1) Try module import (preferred)
       try {
-        if (window.__miniapp_ready_called) return Promise.resolve({ok:true, which:'already'});
+        const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js');
+        const sdk = mod?.sdk || mod?.default || mod;
+        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+          await sdk.actions.ready();
+          console.log('[MiniApp] sdk.actions.ready() OK (module)');
+          window.__miniapp_ready_called = true;
+          return;
+        }
+      } catch(e){
+        console.warn('[MiniApp] module import failed', e);
+      }
+
+      // 2) Try global SDK (UMD) if present
+      try {
         if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          return sdk.actions.ready().then(()=>{ window.__miniapp_ready_called = true; return {ok:true, which:'sdk'} }).catch(err=>({ok:false,err,which:'sdk'}));
+          await sdk.actions.ready(); window.__miniapp_ready_called = true; console.log('[MiniApp] sdk.actions.ready() OK (global sdk)'); return;
         }
         if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-          return farcaster.actions.ready().then(()=>{ window.__miniapp_ready_called = true; return {ok:true, which:'farcaster'} }).catch(err=>({ok:false,err,which:'farcaster'}));
+          await farcaster.actions.ready(); window.__miniapp_ready_called = true; console.log('[MiniApp] farcaster.actions.ready() OK'); return;
         }
-      } catch(e){ return Promise.resolve({ok:false,err:e,which:'throw'}); }
-      return Promise.resolve({ok:false,err:new Error('no-sdk'),which:'none'});
-    }
+      } catch(e){ console.warn('[MiniApp] global sdk ready failed', e); }
 
-    function sendFallbackReady(){
-      if (window.__miniapp_ready_called) { console.log('[Miniapp] ready already called, skipping fallback'); return; }
+      // 3) Single fallback postMessage (only once)
       try {
-        const payload = { type:'miniapp:ready', version:'1', href:window.location.href, timestamp:Date.now(), ready:true };
-        try{ window.parent.postMessage(payload, 'https://www.base.dev'); }catch(e){}
-        try{ window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev'); }catch(e){}
-        try{ window.parent.postMessage(payload, '*'); }catch(e){}
-        console.log('[Miniapp] fallback ready posted');
-      } catch(e){ console.warn('[Miniapp] fallback postMessage failed', e); }
+        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready:true };
+        window.parent.postMessage(payload, 'https://www.base.dev');
+        window.parent.postMessage(JSON.stringify(payload), 'https://www.base.dev');
+        console.log('[MiniApp] fallback postMessage sent');
+        window.__miniapp_ready_called = true;
+      } catch(e){ console.warn('[MiniApp] fallback postMessage failed', e); }
     }
 
-    async function notifyBaseReady(){
-      if (window.__miniapp_ready_called) { console.log('[Miniapp] already ready'); return; }
-      console.log('[Miniapp] notifyBaseReady start');
-      const sdkLoaded = await ensureSdkLoaded();
-      console.log('[Miniapp] sdkLoaded?', sdkLoaded, 'window.sdk?', !!window.sdk, 'window.farcaster?', !!window.farcaster);
-      const res = await tryCallSdkReady();
-      if (res && res.ok) { console.log('[Miniapp] sdk.actions.ready() OK via', res.which); return; }
-      console.warn('[Miniapp] sdk.actions.ready() not OK:', res.which, res.err);
-      sendFallbackReady();
-    }
+    // backup: run after full load as safety
+    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(), 200);
+    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(), 200), { once:true });
 
-    // run after load (and also callable from initGame)
-    if (document.readyState === 'complete') { setTimeout(notifyBaseReady, 200); }
-    else { window.addEventListener('load', ()=> setTimeout(notifyBaseReady, 200), { once:true }); }
-
-    // expose for initGame
+    // expose for initGame call
     window.notifyBaseReady = notifyBaseReady;
   </script>
+
 </body>
 </html>
