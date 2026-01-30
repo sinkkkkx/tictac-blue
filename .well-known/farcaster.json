@@ -1,20 +1,20 @@
 {
-  "imageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-  "heroImageUrl": "https://tictac-blue-eight.vercel.app/hero-1200x630.png",
-  "ogImageUrl": "https://tictac-blue-eight.vercel.app/og-1200x630.png",
   "accountAssociation": {
     "header": "eyJmaWQiOjIzNTM0NTYsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhlYjdCZEI4YzhGZTA5NjlEMDA3ZkRlRTNlQWJmOEFBRjZBREIwODdlIn0",
     "payload": "eyJkb21haW4iOiJ0aWN0YWMtYmx1ZS1laWdodC52ZXJjZWwuYXBwIn0",
     "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEHu-LqvjNwFcjw-x9jMMshWJMh_O8auSbDM2c98s-C4mWvKvL-DGV_CEsKMzDXRRXxDTB9fWaUaXPcpygFoTZ5EGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
   },
+  "imageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
+  "heroImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
+  "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
   "miniapp": {
     "version": "1",
     "name": "Tic Tac Blue",
     "homeUrl": "https://tictac-blue-eight.vercel.app",
     "iconUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "imageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-    "heroImageUrl": "https://tictac-blue-eight.vercel.app/hero-1200x630.png",
-    "splashImageUrl": "https://tictac-blue-eight.vercel.app/splash-200.png",
+    "heroImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
+    "splashImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "You (O) vs Computer (X)",
     "description": "Tic Tac Toe vs AI",
@@ -23,9 +23,9 @@
     "tags": ["games","tic-tac-toe"],
     "ogTitle": "Tic Tac Blue",
     "ogDescription": "Play Tic Tac Toe vs AI",
-    "ogImageUrl": "https://tictac-blue-eight.vercel.app/og-1200x630.png",
+    "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
     "screenshotUrls": [
-      "https://tictac-blue-eight.vercel.app/shot1-1200x800.png"
+      "https://tictac-blue-eight.vercel.app/preview-1200x800.png"
     ],
     "noindex": false
   }
