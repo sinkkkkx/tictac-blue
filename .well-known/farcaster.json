@@ -4,29 +4,25 @@
     "payload": "eyJkb21haW4iOiJ0aWN0YWMtYmx1ZS1laWdodC52ZXJjZWwuYXBwIn0",
     "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEHu-LqvjNwFcjw-x9jMMshWJMh_O8auSbDM2c98s-C4mWvKvL-DGV_CEsKMzDXRRXxDTB9fWaUaXPcpygFoTZ5EGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
   },
-  "imageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-  "heroImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-  "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
   "miniapp": {
     "version": "1",
     "name": "Tic Tac Blue",
     "homeUrl": "https://tictac-blue-eight.vercel.app",
     "iconUrl": "https://tictac-blue-eight.vercel.app/icon.png",
-    "imageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-    "heroImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
     "splashImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "You (O) vs Computer (X)",
-    "description": "Tic Tac Toe vs AI",
+    "description": "Play Tic Tac Toe against AI - a lightweight mini game for everyone.",
     "tagline": "Play instantly",
     "primaryCategory": "games",
-    "tags": ["games","tic-tac-toe"],
-    "ogTitle": "Tic Tac Blue",
-    "ogDescription": "Play Tic Tac Toe vs AI",
-    "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
+    "tags": ["games", "tictactoe", "puzzle", "casual", "ai"],
+    "heroImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
     "screenshotUrls": [
       "https://tictac-blue-eight.vercel.app/preview-1200x800.png"
     ],
+    "ogTitle": "Tic Tac Blue",
+    "ogDescription": "Play Tic Tac Toe vs AI - A fun mini game!",
+    "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
     "noindex": false
   }
 }
