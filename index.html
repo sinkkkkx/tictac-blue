@@ -133,7 +133,7 @@
     function endGame(draw, aiWins = false){
       gameActive = false; document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
       if (draw){ modalTitle.innerText = 'Draw!'; modalMsg.innerText = 'Unbelievable.'; }
-      else { if (aiWins){ modalTitle.innerText = 'You Lose!'; modalMsg.innerText = 'The AI outsmarted you.'; }
+      else { if (aiWins){ modalTitle.innerText = 'You Lose!'; modalMsg.innerText = 'You just proved that humans are useless :)'; }
              else { modalTitle.innerText = 'You Win!'; modalMsg.innerText = 'Great moves!'; } }
       modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
     }
