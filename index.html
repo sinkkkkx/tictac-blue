@@ -8,13 +8,30 @@
   <meta name="base:app_id" content="697a1c119266edba958ff4c6">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0052FF">
+
+  <!-- fc:frame untuk preview (penting) -->
+  <meta name="fc:frame" content='{
+    "version":"next",
+    "imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png",
+    "button": {
+      "title":"Open App",
+      "action": {
+        "type":"launch_frame",
+        "name":"Tic Tac Blue",
+        "url":"https://tictac-blue-eight.vercel.app",
+        "splashImageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
+        "splashBackgroundColor":"#000000"
+      }
+    }
+  }' />
+
   <meta name="fc:miniapp" content="true" />
   <link rel="icon" href="/icon.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon.png">
 
   <style>
     :root{
-      --bg-page:#000000; --card-bg:#ffffff; --card-border:#e1e4e8;
+      --bg-page:#000; --card-bg:#fff; --card-border:#e1e4e8;
       --accent-o:#0052FF; --accent-x:#ff4757;
       --cell-bg:#161b22; --cell-border:#30363d; --cell-text:#c9d1d9;
     }
@@ -58,8 +75,8 @@
     </div>
   </div>
 
+  <!-- GAME SCRIPT (utuh, jangan ubah nama variabel) -->
   <script>
-    // konsisten nama variabel
     const boardEl = document.getElementById('board');
     const statusText = document.getElementById('status-text');
     const resetBtn = document.getElementById('reset-btn');
@@ -89,13 +106,12 @@
         boardEl.appendChild(cell);
       }
       updateBlinkState();
-      // panggil ready notify setelah UI siap
+      // panggil notifyBaseReady setelah UI siap
       try{ if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
     }
 
     function handleCellClick(idx){
       if (!gameActive || board[idx] !== '') return;
-      // clear blinking classes to recalc
       document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
       makeMove(idx, HUMAN, humanMoveHistory);
       if (checkWin(board, HUMAN)){ endGame(false); return; }
@@ -118,14 +134,12 @@
         cell.innerText = player.toUpperCase();
         cell.classList.add('taken', player);
       }
-      // remove oldest if over limit
       if (history.length > 3){
         const removed = history.shift();
         board[removed] = '';
         const removedCell = boardEl.children[removed];
         if (removedCell){ removedCell.innerText = ''; removedCell.classList.remove('taken','x','o'); }
       }
-      // update blink after state change
       updateBlinkState();
     }
 
@@ -185,44 +199,67 @@
       return moves[bestIndex];
     }
 
-    // listeners
     resetBtn.addEventListener('click', initGame);
     rematchBtn.addEventListener('click', ()=>{
-      // close modal then re-init
-      modal.classList.remove('active'); modal.setAttribute('aria-hidden','true');
-      initGame();
+      modal.classList.remove('active'); modal.setAttribute('aria-hidden','true'); initGame();
     });
 
-    // init
     initGame();
   </script>
 
-  <!-- notifyBaseReady minimal (kept) -->
+  <!-- notifyBaseReady final: try module -> try globals -> postMessage ke banyak origin (object + string) -->
   <script>
     async function notifyBaseReady(){
       if (window.__miniapp_ready_called) return;
       try {
-        // try module import (preferred)
+        // try ESM import (preferred)
         const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js').catch(()=>null);
         const sdk = mod && (mod.sdk || mod.default || mod);
         if (sdk && sdk.actions && typeof sdk.actions.ready === 'function'){
           await sdk.actions.ready();
-          console.log('[MiniApp] sdk.actions.ready() OK');
-          window.__miniapp_ready_called = true;
-          return;
+          console.log('[MiniApp] sdk.actions.ready() OK (module)');
+          window.__miniapp_ready_called = true; return;
         }
-      } catch(e){ console.warn('module import fail', e); }
-      // fallback single postMessage
+      } catch(e){ console.warn('[MiniApp] module import failed', e); }
+
+      try {
+        // try global UMD
+        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function'){
+          await sdk.actions.ready();
+          console.log('[MiniApp] sdk.actions.ready() OK (global sdk)');
+          window.__miniapp_ready_called = true; return;
+        }
+        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function'){
+          await farcaster.actions.ready();
+          console.log('[MiniApp] farcaster.actions.ready() OK');
+          window.__miniapp_ready_called = true; return;
+        }
+      } catch(e){ console.warn('[MiniApp] global sdk ready failed', e); }
+
+      // fallback: postMessage to known origins (object + JSON string) + wildcard
       try {
         const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
-        window.parent.postMessage(payload, 'https://www.base.dev');
-        console.log('[MiniApp] fallback postMessage sent');
+        const origins = [
+          'https://www.base.dev',
+          'https://preview.base.org',
+          'https://preview.base.dev',
+          'https://base.dev',
+          'https://app.base.org'
+        ];
+        origins.forEach(origin=>{
+          try{ window.parent.postMessage(payload, origin); }catch(e){}
+          try{ window.parent.postMessage(JSON.stringify(payload), origin); }catch(e){}
+        });
+        try{ window.parent.postMessage(payload, '*'); }catch(e){}
+        console.log('[MiniApp] fallback postMessage sent to multiple origins');
         window.__miniapp_ready_called = true;
-      } catch(e){ console.warn('fallback postMessage failed', e); }
+      } catch(e){ console.warn('[MiniApp] fallback postMessage failed', e); }
     }
-    // run once after load + exposed for initGame
-    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(), 200);
-    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(), 200), { once:true });
+
+    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(),200);
+    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(),200), { once:true });
+
+    // expose untuk dipanggil manual setelah initGame jika perlu
     window.notifyBaseReady = notifyBaseReady;
   </script>
 </body>
