@@ -9,7 +9,7 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0052FF">
 
-  <!-- fc:frame untuk preview (penting) -->
+  <!-- fc:frame untuk Preview (pastikan URL gambar valid) -->
   <meta name="fc:frame" content='{
     "version":"next",
     "imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png",
@@ -24,17 +24,12 @@
       }
     }
   }' />
-
   <meta name="fc:miniapp" content="true" />
   <link rel="icon" href="/icon.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon.png">
 
   <style>
-    :root{
-      --bg-page:#000; --card-bg:#fff; --card-border:#e1e4e8;
-      --accent-o:#0052FF; --accent-x:#ff4757;
-      --cell-bg:#161b22; --cell-border:#30363d; --cell-text:#c9d1d9;
-    }
+    :root{--bg-page:#000;--card-bg:#fff;--card-border:#e1e4e8;--accent-o:#0052FF;--accent-x:#ff4757;--cell-bg:#161b22;--cell-border:#30363d;--cell-text:#c9d1d9}
     *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
     body{background:var(--bg-page);color:#0d1117;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
     .game-container{background:var(--card-bg);padding:2rem;border-radius:16px;width:100%;max-width:420px;text-align:center;border:1px solid var(--card-border);box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -43,7 +38,7 @@
     .subtitle{color:#666;margin-bottom:1rem}
     .status-bar{margin-bottom:1rem;padding:8px 20px;border-radius:50px;border:1px solid #e1e4e8;background:rgba(0,0,0,.03)}
     .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px;margin-bottom:1rem}
-    .cell{background:var(--cell-bg);color:var(--cell-text);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;border:1px solid var(--cell-border);cursor:pointer;user-select:none}
+    .cell{background:var(--cell-bg);color:var(--cell-text);aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:800;border:1px solid var(--card-border);cursor:pointer;user-select:none}
     .cell.o{color:var(--accent-o)} .cell.x{color:var(--accent-x)}
     .cell.will-disappear{animation:blink-red 1s infinite;border:2px solid var(--accent-x);background:#2d1518}
     @keyframes blink-red{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
@@ -61,9 +56,7 @@
     </header>
 
     <div class="status-bar"><span id="status-text">Your Turn</span></div>
-
     <section id="board" class="board" aria-label="game board"></section>
-
     <div style="display:flex;justify-content:center"><button id="reset-btn">Reset Board</button></div>
   </main>
 
@@ -75,7 +68,7 @@
     </div>
   </div>
 
-  <!-- GAME SCRIPT (utuh, jangan ubah nama variabel) -->
+  <!-- GAME SCRIPT (sama seperti sebelumnya, lengkap) -->
   <script>
     const boardEl = document.getElementById('board');
     const statusText = document.getElementById('status-text');
@@ -106,7 +99,6 @@
         boardEl.appendChild(cell);
       }
       updateBlinkState();
-      // panggil notifyBaseReady setelah UI siap
       try{ if (typeof window.notifyBaseReady === 'function') window.notifyBaseReady(); } catch(e){}
     }
 
@@ -115,8 +107,7 @@
       document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
       makeMove(idx, HUMAN, humanMoveHistory);
       if (checkWin(board, HUMAN)){ endGame(false); return; }
-      statusText.innerText = 'Computer Thinking...';
-      gameActive = false;
+      statusText.innerText = 'Computer Thinking...'; gameActive = false;
       setTimeout(()=>{
         const aiMoveObj = minimax(board, humanMoveHistory, aiMoveHistory, 0, false);
         const aiIdx = aiMoveObj.index;
@@ -127,16 +118,11 @@
     }
 
     function makeMove(index, player, history){
-      history.push(index);
-      board[index] = player;
+      history.push(index); board[index] = player;
       const cell = boardEl.children[index];
-      if (cell){
-        cell.innerText = player.toUpperCase();
-        cell.classList.add('taken', player);
-      }
+      if (cell){ cell.innerText = player.toUpperCase(); cell.classList.add('taken', player); }
       if (history.length > 3){
-        const removed = history.shift();
-        board[removed] = '';
+        const removed = history.shift(); board[removed] = '';
         const removedCell = boardEl.children[removed];
         if (removedCell){ removedCell.innerText = ''; removedCell.classList.remove('taken','x','o'); }
       }
@@ -146,8 +132,7 @@
     function updateBlinkState(){
       document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
       if (gameActive && humanMoveHistory.length === 3){
-        const oldest = humanMoveHistory[0];
-        const el = boardEl.children[oldest];
+        const oldest = humanMoveHistory[0]; const el = boardEl.children[oldest];
         if (el) el.classList.add('will-disappear');
       }
     }
@@ -157,13 +142,10 @@
     }
 
     function endGame(draw, aiWins = false){
-      gameActive = false;
-      document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
+      gameActive = false; document.querySelectorAll('.will-disappear').forEach(el=>el.classList.remove('will-disappear'));
       if (draw){ modalTitle.innerText = 'Draw!'; modalMsg.innerText = 'Unbelievable.'; }
-      else {
-        if (aiWins){ modalTitle.innerText = 'You Lose!'; modalMsg.innerText = 'The AI outsmarted you.'; }
-        else { modalTitle.innerText = 'You Win!'; modalMsg.innerText = 'Great moves!'; }
-      }
+      else { if (aiWins){ modalTitle.innerText = 'You Lose!'; modalMsg.innerText = 'The AI outsmarted you.'; }
+             else { modalTitle.innerText = 'You Win!'; modalMsg.innerText = 'Great moves!'; } }
       modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
     }
 
@@ -175,91 +157,87 @@
       if (avail.length === 0) return { score: 0 };
       const moves = [];
       for (let i=0;i<avail.length;i++){
-        const move = { index: avail[i] };
-        const nb = [...curBoard]; const nh = [...hHist]; const na = [...aHist];
-        if (isMaximizing){
-          nb[avail[i]] = AI; na.push(avail[i]);
-          if (na.length > 3){ const r = na.shift(); nb[r] = ''; }
-          move.score = minimax(nb, nh, na, depth+1, false).score;
-        } else {
-          nb[avail[i]] = HUMAN; nh.push(avail[i]);
-          if (nh.length > 3){ const r = nh.shift(); nb[r] = ''; }
-          move.score = minimax(nb, nh, na, depth+1, true).score;
-        }
+        const move = { index: avail[i] }; const nb=[...curBoard]; const nh=[...hHist]; const na=[...aHist];
+        if (isMaximizing){ nb[avail[i]] = AI; na.push(avail[i]); if (na.length>3){ const r=na.shift(); nb[r]=''; } move.score = minimax(nb, nh, na, depth+1, false).score; }
+        else { nb[avail[i]] = HUMAN; nh.push(avail[i]); if (nh.length>3){ const r=nh.shift(); nb[r]=''; } move.score = minimax(nb, nh, na, depth+1, true).score; }
         moves.push(move);
       }
-      let bestIndex = 0;
-      if (isMaximizing){
-        let bestScore = -Infinity;
-        for (let i=0;i<moves.length;i++) if (moves[i].score > bestScore){ bestScore = moves[i].score; bestIndex = i; }
-      } else {
-        let bestScore = Infinity;
-        for (let i=0;i<moves.length;i++) if (moves[i].score < bestScore){ bestScore = moves[i].score; bestIndex = i; }
-      }
+      let bestIndex=0;
+      if (isMaximizing){ let bestScore=-Infinity; for (let i=0;i<moves.length;i++) if (moves[i].score>bestScore){ bestScore=moves[i].score; bestIndex=i; } }
+      else { let bestScore=Infinity; for (let i=0;i<moves.length;i++) if (moves[i].score<bestScore){ bestScore=moves[i].score; bestIndex=i; } }
       return moves[bestIndex];
     }
 
     resetBtn.addEventListener('click', initGame);
-    rematchBtn.addEventListener('click', ()=>{
-      modal.classList.remove('active'); modal.setAttribute('aria-hidden','true'); initGame();
-    });
+    rematchBtn.addEventListener('click', ()=>{ modal.classList.remove('active'); modal.setAttribute('aria-hidden','true'); initGame(); });
 
     initGame();
   </script>
 
-  <!-- notifyBaseReady final: try module -> try globals -> postMessage ke banyak origin (object + string) -->
+  <!-- READY + HANDSHAKE: listen parent ping, call sdk.ready() jika ada, reply ke ev.source -->
   <script>
-    async function notifyBaseReady(){
+    async function notifyBaseReady() {
       if (window.__miniapp_ready_called) return;
+      // try module import
       try {
-        // try ESM import (preferred)
         const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js').catch(()=>null);
         const sdk = mod && (mod.sdk || mod.default || mod);
-        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function'){
+        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
           await sdk.actions.ready();
           console.log('[MiniApp] sdk.actions.ready() OK (module)');
           window.__miniapp_ready_called = true; return;
         }
       } catch(e){ console.warn('[MiniApp] module import failed', e); }
 
+      // try global UMD
       try {
-        // try global UMD
-        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function'){
+        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
           await sdk.actions.ready();
-          console.log('[MiniApp] sdk.actions.ready() OK (global sdk)');
+          console.log('[MiniApp] sdk.actions.ready() OK (global)');
           window.__miniapp_ready_called = true; return;
         }
-        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function'){
+        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
           await farcaster.actions.ready();
-          console.log('[MiniApp] farcaster.actions.ready() OK');
+          console.log('[MiniApp] farcaster.actions.ready() OK (global farcaster)');
           window.__miniapp_ready_called = true; return;
         }
       } catch(e){ console.warn('[MiniApp] global sdk ready failed', e); }
 
-      // fallback: postMessage to known origins (object + JSON string) + wildcard
-      try {
-        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
-        const origins = [
-          'https://www.base.dev',
-          'https://preview.base.org',
-          'https://preview.base.dev',
-          'https://base.dev',
-          'https://app.base.org'
-        ];
-        origins.forEach(origin=>{
-          try{ window.parent.postMessage(payload, origin); }catch(e){}
-          try{ window.parent.postMessage(JSON.stringify(payload), origin); }catch(e){}
-        });
-        try{ window.parent.postMessage(payload, '*'); }catch(e){}
-        console.log('[MiniApp] fallback postMessage sent to multiple origins');
-        window.__miniapp_ready_called = true;
-      } catch(e){ console.warn('[MiniApp] fallback postMessage failed', e); }
+      // fallback postMessage to known origins
+      const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
+      const origins = ['https://www.base.dev','https://preview.base.org','https://preview.base.dev','https://base.dev','https://app.base.org'];
+      origins.forEach(origin => {
+        try{ window.parent.postMessage(payload, origin); } catch(e){}
+        try{ window.parent.postMessage(JSON.stringify(payload), origin); } catch(e){}
+      });
+      try{ window.parent.postMessage(payload, '*'); } catch(e){}
+      console.log('[MiniApp] fallback postMessage sent');
+      window.__miniapp_ready_called = true;
     }
 
-    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(),200);
-    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(),200), { once:true });
+    // reply directly to parent's ping (respond to ev.source with ev.origin)
+    window.addEventListener('message', (ev) => {
+      let data = ev.data;
+      try { if (typeof data === 'string') data = JSON.parse(data); } catch(e){}
+      if (!data || !data.type) return;
+      // accepted ping/connect types (common)
+      const pings = ['miniapp:connect','miniapp:ping','miniapp:ready-check','miniapp:init'];
+      if (pings.includes(data.type)) {
+        console.log('[MiniApp] parent ping received:', data.type, 'from', ev.origin);
+        // call SDK ready + reply to specific source/origin
+        notifyBaseReady().catch(()=>{});
+        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
+        try { ev.source.postMessage(payload, ev.origin); } catch(e) {}
+        try { ev.source.postMessage(JSON.stringify(payload), ev.origin); } catch(e) {}
+        console.log('[MiniApp] replied ready to parent origin', ev.origin);
+      }
+    }, false);
 
-    // expose untuk dipanggil manual setelah initGame jika perlu
+    // run once after load in case parent didn't ping
+    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(), 200);
+    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(), 200), { once:true });
+
+    // expose for manual call
     window.notifyBaseReady = notifyBaseReady;
   </script>
 </body>
