@@ -10,24 +10,10 @@
   <meta name="theme-color" content="#0052FF">
 
   <!-- Script SDK Farcaster Miniapp (UMD) - Tambahan untuk ready call -->
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk@0.5.1/dist/index.umd.js"></script>
 
-  <!-- fc:frame untuk Preview (pastikan URL gambar valid) -->
-  <meta name="fc:frame" content='{
-    "version":"next",
-    "imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png",
-    "button": {
-      "title":"Open App",
-      "action": {
-        "type":"launch_frame",
-        "name":"Tic Tac Blue",
-        "url":"https://tictac-blue-eight.vercel.app",
-        "splashImageUrl":"https://tictac-blue-eight.vercel.app/icon.png",
-        "splashBackgroundColor":"#000000"
-      }
-    }
-  }' />
-  <meta name="fc:miniapp" content="true" />
+  <!-- fc:miniapp untuk Preview (pastikan URL gambar valid) -->
+  <meta name="fc:miniapp" content='{"version":"next","imageUrl":"https://tictac-blue-eight.vercel.app/preview-1200x800.png","button":{"title":"Play Now","action":{"type":"launch_frame","url":"https://tictac-blue-eight.vercel.app","name":"Tic Tac Blue","splashImageUrl":"https://tictac-blue-eight.vercel.app/icon.png","splashBackgroundColor":"#000000"}}}' />
   <link rel="icon" href="/icon.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon.png">
 
@@ -179,23 +165,36 @@
 
   <!-- READY SCRIPT: Panggil SDK ready setelah load -->
   <script>
-    window.addEventListener('load', async () => {
+    (async function() {
       try {
-        if (window.sdk && window.sdk.actions && typeof window.sdk.actions.ready === 'function') {
-          await window.sdk.actions.ready();
+        // UMD build exposes SDK as window.FarcasterMiniAppSdk or window.Farcaster
+        const sdk = window.FarcasterMiniAppSdk || window.Farcaster || window.sdk;
+        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+          await sdk.actions.ready();
           console.log('[MiniApp] SDK ready called successfully');
+        } else if (sdk && typeof sdk.ready === 'function') {
+          await sdk.ready();
+          console.log('[MiniApp] SDK ready called (direct method)');
         } else {
-          console.warn('[MiniApp] SDK not available');
+          console.warn('[MiniApp] SDK not available, waiting for load...');
+          window.addEventListener('load', async () => {
+            const sdkLoaded = window.FarcasterMiniAppSdk || window.Farcaster || window.sdk;
+            if (sdkLoaded && sdkLoaded.actions && typeof sdkLoaded.actions.ready === 'function') {
+              await sdkLoaded.actions.ready();
+              console.log('[MiniApp] SDK ready called after load');
+            }
+          });
         }
       } catch (e) {
         console.error('[MiniApp] Error calling SDK ready:', e);
       }
-    });
+    })();
 
     // Expose untuk manual call jika perlu
     window.notifyBaseReady = async () => {
-      if (window.sdk && window.sdk.actions) {
-        await window.sdk.actions.ready();
+      const sdk = window.FarcasterMiniAppSdk || window.Farcaster || window.sdk;
+      if (sdk && sdk.actions) {
+        await sdk.actions.ready();
       }
     };
   </script>
