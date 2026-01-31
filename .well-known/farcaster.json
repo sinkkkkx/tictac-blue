@@ -11,7 +11,7 @@
     "iconUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashBackgroundColor": "#000000",
-    "subtitle": "You (O) vs Computer (X)",
+    "subtitle": "Losing is impressive",
     "description": "Play Tic Tac Toe against AI - a lightweight mini game for everyone.",
     "tagline": "Play instantly",
     "primaryCategory": "games",
