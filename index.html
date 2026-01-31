@@ -9,6 +9,9 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0052FF">
 
+  <!-- Script SDK Farcaster Miniapp (UMD) - Tambahan untuk ready call -->
+  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.umd.js"></script>
+
   <!-- fc:frame untuk Preview (pastikan URL gambar valid) -->
   <meta name="fc:frame" content='{
     "version":"next",
@@ -174,71 +177,27 @@
     initGame();
   </script>
 
-  <!-- READY + HANDSHAKE: listen parent ping, call sdk.ready() jika ada, reply ke ev.source -->
+  <!-- READY SCRIPT: Panggil SDK ready setelah load -->
   <script>
-    async function notifyBaseReady() {
-      if (window.__miniapp_ready_called) return;
-      // try module import
+    window.addEventListener('load', async () => {
       try {
-        const mod = await import('https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js').catch(()=>null);
-        const sdk = mod && (mod.sdk || mod.default || mod);
-        if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          await sdk.actions.ready();
-          console.log('[MiniApp] sdk.actions.ready() OK (module)');
-          window.__miniapp_ready_called = true; return;
+        if (window.sdk && window.sdk.actions && typeof window.sdk.actions.ready === 'function') {
+          await window.sdk.actions.ready();
+          console.log('[MiniApp] SDK ready called successfully');
+        } else {
+          console.warn('[MiniApp] SDK not available');
         }
-      } catch(e){ console.warn('[MiniApp] module import failed', e); }
-
-      // try global UMD
-      try {
-        if (window.sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          await sdk.actions.ready();
-          console.log('[MiniApp] sdk.actions.ready() OK (global)');
-          window.__miniapp_ready_called = true; return;
-        }
-        if (window.farcaster && farcaster.actions && typeof farcaster.actions.ready === 'function') {
-          await farcaster.actions.ready();
-          console.log('[MiniApp] farcaster.actions.ready() OK (global farcaster)');
-          window.__miniapp_ready_called = true; return;
-        }
-      } catch(e){ console.warn('[MiniApp] global sdk ready failed', e); }
-
-      // fallback postMessage to known origins
-      const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
-      const origins = ['https://www.base.dev','https://preview.base.org','https://preview.base.dev','https://base.dev','https://app.base.org'];
-      origins.forEach(origin => {
-        try{ window.parent.postMessage(payload, origin); } catch(e){}
-        try{ window.parent.postMessage(JSON.stringify(payload), origin); } catch(e){}
-      });
-      try{ window.parent.postMessage(payload, '*'); } catch(e){}
-      console.log('[MiniApp] fallback postMessage sent');
-      window.__miniapp_ready_called = true;
-    }
-
-    // reply directly to parent's ping (respond to ev.source with ev.origin)
-    window.addEventListener('message', (ev) => {
-      let data = ev.data;
-      try { if (typeof data === 'string') data = JSON.parse(data); } catch(e){}
-      if (!data || !data.type) return;
-      // accepted ping/connect types (common)
-      const pings = ['miniapp:connect','miniapp:ping','miniapp:ready-check','miniapp:init'];
-      if (pings.includes(data.type)) {
-        console.log('[MiniApp] parent ping received:', data.type, 'from', ev.origin);
-        // call SDK ready + reply to specific source/origin
-        notifyBaseReady().catch(()=>{});
-        const payload = { type:'miniapp:ready', version:'1', href: location.href, timestamp: Date.now(), ready: true };
-        try { ev.source.postMessage(payload, ev.origin); } catch(e) {}
-        try { ev.source.postMessage(JSON.stringify(payload), ev.origin); } catch(e) {}
-        console.log('[MiniApp] replied ready to parent origin', ev.origin);
+      } catch (e) {
+        console.error('[MiniApp] Error calling SDK ready:', e);
       }
-    }, false);
+    });
 
-    // run once after load in case parent didn't ping
-    if (document.readyState === 'complete') setTimeout(()=>notifyBaseReady(), 200);
-    else window.addEventListener('load', ()=> setTimeout(()=>notifyBaseReady(), 200), { once:true });
-
-    // expose for manual call
-    window.notifyBaseReady = notifyBaseReady;
+    // Expose untuk manual call jika perlu
+    window.notifyBaseReady = async () => {
+      if (window.sdk && window.sdk.actions) {
+        await window.sdk.actions.ready();
+      }
+    };
   </script>
 </body>
 </html>
