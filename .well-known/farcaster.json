@@ -11,8 +11,8 @@
     "iconUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashImageUrl": "https://tictac-blue-eight.vercel.app/icon.png",
     "splashBackgroundColor": "#000000",
-    "subtitle": "Even your toaster could win this game",
-    "description": "Play Tic Tac Toe against Computer - a lightweight mini game for everyone.",
+    "subtitle": "You (O) vs Computer (X)",
+    "description": "Play Tic Tac Toe against AI - a lightweight mini game for everyone.",
     "tagline": "Play instantly",
     "primaryCategory": "games",
     "tags": ["games", "tictactoe", "puzzle", "casual", "ai"],
@@ -21,7 +21,7 @@
       "https://tictac-blue-eight.vercel.app/preview-1200x800.png"
     ],
     "ogTitle": "Tic Tac Blue",
-    "ogDescription": "Play Tic Tac Toe vs Computer - A fun mini game!",
+    "ogDescription": "Play Tic Tac Toe vs AI - A fun mini game!",
     "ogImageUrl": "https://tictac-blue-eight.vercel.app/preview-1200x800.png",
     "noindex": false
   }
